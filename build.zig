@@ -22,8 +22,8 @@ pub fn build(b: *std.Build) void {
     const assertions = b.option(bool, "assertions", "Enable assertions (default true in debug builds)") orelse (optimize == .Debug);
     _ = assertions;
 
-    // FIXME: make this true by default?
-    const dwarf = b.option(bool, "dwarf", "Enable full DWARF support") orelse false;
+    // FIXME: why does this not error on web build?
+    const dwarf = b.option(bool, "dwarf", "Enable full DWARF support") orelse !target.result.cpu.arch.isWasm();
     const single_threaded = b.option(bool, "single_threaded", "compile without threading support") orelse target.result.cpu.arch.isWasm();
 
     const origin_dep = b.dependency("binaryen", .{});
@@ -362,21 +362,29 @@ pub fn build(b: *std.Build) void {
         .flags = extraFlags(b, flags, &.{"-Wno-deprecated-declarations"}),
     });
 
+    var llvm_flags = std.ArrayList([]const u8).init(b.allocator);
+    defer llvm_flags.deinit();
+    llvm_flags.appendSlice(&.{
+        "-w",
+        "-std=c++14",
+        "-D_GNU_SOURCE",
+        "-D__STDC_CONSTANT_MACROS",
+        "-D__STDC_FORMAT_MACROS",
+        "-D__STDC_LIMIT_MACROS",
+    }) catch unreachable;
+
+    if (optimize == .Debug) {
+        llvm_flags.append("-D_DEBUG") catch unreachable;
+    }
+
     binaryen_mod.addCSourceFiles(.{
         .root = origin_dep.path("."),
         .files = &.{
             "third_party/llvm-project/SmallVector.cpp",
             "third_party/llvm-project/ErrorHandling.cpp",
+            "third_party/llvm-project/Twine.cpp",
         },
-        .flags = extraFlags(b, flags, &.{
-            "-w",
-            "-std=c++14",
-            "-D_GNU_SOURCE",
-            "-D_DEBUG",
-            "-D__STDC_CONSTANT_MACROS",
-            "-D__STDC_FORMAT_MACROS",
-            "-D__STDC_LIMIT_MACROS",
-        }),
+        .flags = extraFlags(b, flags, llvm_flags.items),
     });
 
     if (dwarf) {
@@ -421,7 +429,6 @@ pub fn build(b: *std.Build) void {
                 "third_party/llvm-project/DWARFVisitor.cpp",
                 "third_party/llvm-project/DWARFYAML.cpp",
                 "third_party/llvm-project/Error.cpp",
-                "third_party/llvm-project/ErrorHandling.cpp",
                 "third_party/llvm-project/FormatVariadic.cpp",
                 "third_party/llvm-project/Hashing.cpp",
                 "third_party/llvm-project/LEB128.cpp",
@@ -440,21 +447,12 @@ pub fn build(b: *std.Build) void {
                 "third_party/llvm-project/StringMap.cpp",
                 "third_party/llvm-project/StringRef.cpp",
                 "third_party/llvm-project/SymbolicFile.cpp",
-                "third_party/llvm-project/Twine.cpp",
                 "third_party/llvm-project/UnicodeCaseFold.cpp",
                 "third_party/llvm-project/WithColor.cpp",
                 "third_party/llvm-project/YAMLParser.cpp", // XXX: needed?
                 "third_party/llvm-project/YAMLTraits.cpp",
             },
-            .flags = extraFlags(b, flags, &.{
-                "-w",
-                "-std=c++14",
-                "-D_GNU_SOURCE",
-                "-D_DEBUG",
-                "-D__STDC_CONSTANT_MACROS",
-                "-D__STDC_FORMAT_MACROS",
-                "-D__STDC_LIMIT_MACROS",
-            }),
+            .flags = extraFlags(b, flags, llvm_flags.items),
         });
     }
 
