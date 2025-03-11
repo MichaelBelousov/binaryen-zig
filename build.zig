@@ -18,8 +18,12 @@ pub fn build(b: *std.Build) void {
         .default_target = web_target_query,
     });
     const optimize = b.standardOptimizeOption(.{});
+
     const assertions = b.option(bool, "assertions", "Enable assertions (default true in debug builds)") orelse (optimize == .Debug);
-    const dwarf = b.option(bool, "dwarf", "Enable full DWARF support") orelse true;
+    _ = assertions;
+
+    // FIXME: make this true by default?
+    const dwarf = b.option(bool, "dwarf", "Enable full DWARF support") orelse false;
     const single_threaded = b.option(bool, "single_threaded", "compile without threading support") orelse target.result.cpu.arch.isWasm();
 
     const origin_dep = b.dependency("binaryen", .{});
@@ -46,13 +50,15 @@ pub fn build(b: *std.Build) void {
     binaryen_mod.addIncludePath(origin_dep.path("src"));
     binaryen_mod.addIncludePath(origin_dep.path("third_party/FP16/include"));
 
+    binaryen_mod.addIncludePath(origin_dep.path("third_party/llvm-project/include"));
     if (dwarf) {
         binaryen_mod.addCMacro("BUILD_LLVM_DWARF", "");
-        binaryen_mod.addIncludePath(origin_dep.path("third_party/llvm-project/include"));
     }
-    if (!assertions) {
-        binaryen_mod.addCMacro("NDEBUG", "");
-    }
+
+    // FIXME: NDEBUG seems defined by zig or something?
+    // if (!assertions) {
+    //     binaryen_mod.addCMacro("NDEBUG", "");
+    // }
 
     // TODO: wasm target? Might require emscripten though
 
@@ -356,6 +362,23 @@ pub fn build(b: *std.Build) void {
         .flags = extraFlags(b, flags, &.{"-Wno-deprecated-declarations"}),
     });
 
+    binaryen_mod.addCSourceFiles(.{
+        .root = origin_dep.path("."),
+        .files = &.{
+            "third_party/llvm-project/SmallVector.cpp",
+            "third_party/llvm-project/ErrorHandling.cpp",
+        },
+        .flags = extraFlags(b, flags, &.{
+            "-w",
+            "-std=c++14",
+            "-D_GNU_SOURCE",
+            "-D_DEBUG",
+            "-D__STDC_CONSTANT_MACROS",
+            "-D__STDC_FORMAT_MACROS",
+            "-D__STDC_LIMIT_MACROS",
+        }),
+    });
+
     if (dwarf) {
         binaryen_mod.addCSourceFiles(.{
             .root = origin_dep.path("."),
@@ -413,7 +436,6 @@ pub fn build(b: *std.Build) void {
                 "third_party/llvm-project/Path.cpp",
                 "third_party/llvm-project/raw_ostream.cpp",
                 "third_party/llvm-project/ScopedPrinter.cpp",
-                "third_party/llvm-project/SmallVector.cpp",
                 "third_party/llvm-project/SourceMgr.cpp",
                 "third_party/llvm-project/StringMap.cpp",
                 "third_party/llvm-project/StringRef.cpp",
@@ -468,6 +490,7 @@ pub fn build(b: *std.Build) void {
         .single_threaded = single_threaded,
         .target = target,
         .optimize = optimize,
+        .strip = optimize != .Debug,
     });
     exe.root_module.addImport("binaryen", binaryen_mod);
     //exe.linkLibCpp();
