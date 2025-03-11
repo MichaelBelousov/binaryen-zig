@@ -24,50 +24,41 @@ pub fn build(b: *std.Build) void {
 
     const origin_dep = b.dependency("binaryen", .{});
 
-    const lib = b.addStaticLibrary(.{
-        .name = "binaryen",
+    const binaryen_mod = b.addModule("binaryen", .{
+        .root_source_file = b.path("binaryen.zig"),
+        .single_threaded = single_threaded,
         .target = target,
         .optimize = optimize,
-        .root_source_file = b.path("wasm_intrinsics.zig"),
-        .single_threaded = single_threaded,
     });
 
-    lib.root_module.addAnonymousImport("binaryen-wat-intrinsics", .{
+    binaryen_mod.addAnonymousImport("binaryen-wat-intrinsics", .{
         .root_source_file = origin_dep.path("src/passes/wasm-intrinsics.wat"),
         .optimize = optimize,
         .target = target,
     });
 
-    b.getInstallStep().dependOn(&lib.step);
-
-    lib.root_module.addCMacro("BUILD_STATIC_LIBRARY", "");
+    binaryen_mod.addCMacro("BUILD_STATIC_LIBRARY", "");
 
     if (single_threaded) {
-        lib.root_module.addCMacro("BINARYEN_SINGLE_THREADED", "1");
+        binaryen_mod.addCMacro("BINARYEN_SINGLE_THREADED", "1");
     }
 
-    if (target.result.cpu.arch.isWasm()) {
-        lib.shared_memory = true;
-        lib.export_memory = true;
-        lib.import_memory = true;
-    }
-
-    lib.addIncludePath(origin_dep.path("src"));
-    lib.addIncludePath(origin_dep.path("third_party/FP16/include"));
+    binaryen_mod.addIncludePath(origin_dep.path("src"));
+    binaryen_mod.addIncludePath(origin_dep.path("third_party/FP16/include"));
 
     if (dwarf) {
-        lib.root_module.addCMacro("BUILD_LLVM_DWARF", "");
-        lib.addIncludePath(origin_dep.path("third_party/llvm-project/include"));
+        binaryen_mod.addCMacro("BUILD_LLVM_DWARF", "");
+        binaryen_mod.addIncludePath(origin_dep.path("third_party/llvm-project/include"));
     }
     if (!assertions) {
-        lib.root_module.addCMacro("NDEBUG", "");
+        binaryen_mod.addCMacro("NDEBUG", "");
     }
 
     // TODO: wasm target? Might require emscripten though
 
     if (target.result.os.tag == .windows) {
-        lib.root_module.addCMacro("_GNU_SOURCE", "");
-        lib.root_module.addCMacro("__STDC_FORMAT_MACROS", "");
+        binaryen_mod.addCMacro("_GNU_SOURCE", "");
+        binaryen_mod.addCMacro("__STDC_FORMAT_MACROS", "");
         // TODO: -wl,/stack:8388608
     }
 
@@ -93,7 +84,7 @@ pub fn build(b: *std.Build) void {
         "-Wno-unused-but-set-variable",
     };
 
-    lib.addCSourceFiles(.{
+    binaryen_mod.addCSourceFiles(.{
         .root = origin_dep.path("."),
         .files = &.{
             "src/ir/debuginfo.cpp",
@@ -122,7 +113,7 @@ pub fn build(b: *std.Build) void {
         .flags = flags,
     });
 
-    lib.addCSourceFiles(.{
+    binaryen_mod.addCSourceFiles(.{
         .root = origin_dep.path("."),
         .files = &.{
             "src/asmjs/asm_v_wasm.cpp",
@@ -132,7 +123,7 @@ pub fn build(b: *std.Build) void {
         .flags = flags,
     });
 
-    lib.addCSourceFiles(.{
+    binaryen_mod.addCSourceFiles(.{
         .root = origin_dep.path("."),
         .files = &.{
             "src/cfg/Relooper.cpp",
@@ -140,7 +131,7 @@ pub fn build(b: *std.Build) void {
         .flags = flags,
     });
 
-    lib.addCSourceFiles(.{
+    binaryen_mod.addCSourceFiles(.{
         .root = origin_dep.path("."),
         .files = &.{
             "src/analysis/cfg.cpp",
@@ -148,7 +139,7 @@ pub fn build(b: *std.Build) void {
         .flags = flags,
     });
 
-    lib.addCSourceFiles(.{
+    binaryen_mod.addCSourceFiles(.{
         .root = origin_dep.path("."),
         .files = &.{
             "src/emscripten-optimizer/optimizer-shared.cpp",
@@ -158,7 +149,7 @@ pub fn build(b: *std.Build) void {
         .flags = flags,
     });
 
-    lib.addCSourceFiles(.{
+    binaryen_mod.addCSourceFiles(.{
         .root = origin_dep.path("."),
         .files = &.{
             "src/parser/wat-parser.cpp",
@@ -175,14 +166,14 @@ pub fn build(b: *std.Build) void {
         .flags = flags,
     });
 
-    lib.addCSourceFiles(.{
+    binaryen_mod.addCSourceFiles(.{
         .files = &.{
             "wasm_intrinsics.cpp",
         },
         .flags = flags,
     });
 
-    lib.addCSourceFiles(.{
+    binaryen_mod.addCSourceFiles(.{
         .root = origin_dep.path("."),
         .files = &.{
             "src/passes/AbstractTypeRefining.cpp",
@@ -306,7 +297,7 @@ pub fn build(b: *std.Build) void {
         .flags = flags,
     });
 
-    lib.addCSourceFiles(.{
+    binaryen_mod.addCSourceFiles(.{
         .root = origin_dep.path("."),
         .files = &.{
             "src/support/archive.cpp",
@@ -330,7 +321,7 @@ pub fn build(b: *std.Build) void {
     });
 
     if (!single_threaded) {
-        lib.addCSourceFiles(.{
+        binaryen_mod.addCSourceFiles(.{
             .root = origin_dep.path("."),
             .files = &.{
                 "src/support/threads.cpp",
@@ -339,7 +330,7 @@ pub fn build(b: *std.Build) void {
         });
     }
 
-    lib.addCSourceFiles(.{
+    binaryen_mod.addCSourceFiles(.{
         .root = origin_dep.path("."),
         .files = &.{
             "src/wasm/literal.cpp",
@@ -360,13 +351,13 @@ pub fn build(b: *std.Build) void {
     });
 
     // wasm-debug.cpp includes LLVM header using std::iterator (deprecated in C++17)
-    lib.addCSourceFile(.{
+    binaryen_mod.addCSourceFile(.{
         .file = origin_dep.path("src/wasm/wasm-debug.cpp"),
         .flags = extraFlags(b, flags, &.{"-Wno-deprecated-declarations"}),
     });
 
     if (dwarf) {
-        lib.addCSourceFiles(.{
+        binaryen_mod.addCSourceFiles(.{
             .root = origin_dep.path("."),
             .files = &.{
                 "third_party/llvm-project/Binary.cpp",
@@ -445,26 +436,31 @@ pub fn build(b: *std.Build) void {
         });
     }
 
-    lib.addCSourceFile(.{
+    binaryen_mod.addCSourceFile(.{
         .file = origin_dep.path("src/binaryen-c.cpp"),
         .flags = flags,
     });
 
-    lib.linkLibC();
-    lib.linkLibCpp();
+    binaryen_mod.link_libc = true;
+    binaryen_mod.link_libcpp = true;
 
-    b.installArtifact(lib);
+    const lib = b.addStaticLibrary(.{
+        .name = "binaryen",
+        .root_module = binaryen_mod,
+        .single_threaded = single_threaded,
+    });
+
     lib.installHeader(origin_dep.path("src/binaryen-c.h"), "binaryen/binaryen.h");
     lib.installHeader(origin_dep.path("src/wasm-delegations.def"), "binaryen/wasm-delegations.def");
 
-    const binaryen_mod = b.addModule("binaryen", .{
-        .root_source_file = b.path("binaryen.zig"),
-        .single_threaded = single_threaded,
-        .target = target,
-        .optimize = optimize,
-    });
-    binaryen_mod.linkLibrary(lib);
-    binaryen_mod.addIncludePath(origin_dep.path("src"));
+    b.installArtifact(lib);
+
+    // FIXME
+    if (target.result.cpu.arch.isWasm()) {
+        lib.shared_memory = true;
+        lib.export_memory = true;
+        lib.import_memory = true;
+    }
 
     const exe = b.addExecutable(.{
         .name = "wasm-test",

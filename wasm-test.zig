@@ -25,7 +25,7 @@ pub fn main() !void {
     ;
     const mod = binaryen.Module.parseText(src);
     defer mod.deinit();
-    const out = mod.emitText();
-    defer binaryen.freeEmit(out);
+    // const out = mod.emitText();
+    // defer binaryen.freeEmit(out);
     //try std.testing.expectEqualStrings(src, out);
 }

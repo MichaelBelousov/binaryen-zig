@@ -2,8 +2,11 @@ const std = @import("std");
 const byn = @cImport({
     @cInclude("stdlib.h");
     @cInclude("binaryen-c.h");
-    //@cInclude("/home/mike/projects/binaryen-zig/src/binaryen-c.h");
 });
+
+//pub const intrinsics = @import("./wasm_intrinsics.zig");
+pub export const _wasm_intrinsics_wat = @embedFile("binaryen-wat-intrinsics").*;
+pub usingnamespace @import("./cxa_stubs.zig");
 
 pub fn freeEmit(buf: []u8) void {
     byn.free(buf.ptr);
