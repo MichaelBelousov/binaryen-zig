@@ -1,18 +1,9 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    const target = b.standardTargetOptions(.{});
-    const optimize = b.standardOptimizeOption(.{});
-    const assertions = b.option(bool, "assertions", "Enable assertions (default true in debug builds)") orelse (optimize == .Debug);
-    const dwarf = b.option(bool, "dwarf", "Enable full DWARF support") orelse true;
-    const single_threaded = b.option(bool, "single_threaded", "compile without threading support") orelse target.result.cpu.arch.isWasm();
-
-    const origin_dep = b.dependency("binaryen", .{});
-
     const web_target_query = std.Target.Query{
         .cpu_arch = .wasm32,
-        .os_tag = .freestanding, // can't use freestanding cuz binaryen
-        //.abi = .musl,
+        .os_tag = .wasi, // can't use freestanding cuz binaryen
         // https://github.com/ziglang/zig/pull/16207
         .cpu_features_add = std.Target.wasm.featureSet(&.{
             .atomics,
@@ -21,7 +12,17 @@ pub fn build(b: *std.Build) void {
         }),
     };
 
-    const web_target = b.resolveTargetQuery(web_target_query);
+    //const web_target = b.resolveTargetQuery(web_target_query);
+
+    const target = b.standardTargetOptions(.{
+        .default_target = web_target_query,
+    });
+    const optimize = b.standardOptimizeOption(.{});
+    const assertions = b.option(bool, "assertions", "Enable assertions (default true in debug builds)") orelse (optimize == .Debug);
+    const dwarf = b.option(bool, "dwarf", "Enable full DWARF support") orelse true;
+    const single_threaded = b.option(bool, "single_threaded", "compile without threading support") orelse target.result.cpu.arch.isWasm();
+
+    const origin_dep = b.dependency("binaryen", .{});
 
     const lib = b.addStaticLibrary(.{
         .name = "binaryen",
@@ -31,11 +32,10 @@ pub fn build(b: *std.Build) void {
         .single_threaded = true,
     });
 
-    // TODO: if we need this...
     lib.root_module.addAnonymousImport("binaryen-wat-intrinsics", .{
         .root_source_file = origin_dep.path("src/passes/wasm-intrinsics.wat"),
         .optimize = optimize,
-        .target = web_target,
+        .target = target,
     });
 
     b.getInstallStep().dependOn(&lib.step);
@@ -434,8 +434,9 @@ pub fn build(b: *std.Build) void {
 
     const binaryen_mod = b.addModule("binaryen", .{
         .root_source_file = b.path("binaryen.zig"),
-        .single_threaded = true, // NOTE: wasi builds require this
+        .single_threaded = single_threaded,
         .target = target,
+        .optimize = optimize,
     });
     binaryen_mod.linkLibrary(lib);
     binaryen_mod.addIncludePath(origin_dep.path("src"));
@@ -443,8 +444,9 @@ pub fn build(b: *std.Build) void {
     const exe = b.addExecutable(.{
         .name = "wasm-test",
         .root_source_file = b.path("./wasm-test.zig"),
-        .single_threaded = true,
-        .target = web_target,
+        .single_threaded = single_threaded,
+        .target = target,
+        .optimize = optimize,
     });
     exe.root_module.addImport("binaryen", binaryen_mod);
     //exe.linkLibCpp();
@@ -459,7 +461,7 @@ pub fn build(b: *std.Build) void {
 
     b.step("test", "run wrapper library tests").dependOn(&b.addRunArtifact(tests).step);
 
-    b.step("web", "run wrapper library tests").dependOn(&b.addInstallArtifact(exe, .{}).step);
+    b.step("test-exe", "run wrapper library tests").dependOn(&b.addInstallArtifact(exe, .{}).step);
 }
 
 fn extraFlags(b: *std.Build, flags: []const []const u8, more: []const []const u8) []const []const u8 {
