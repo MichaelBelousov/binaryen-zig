@@ -1,0 +1,13 @@
+{
+  "name": "binaryen-zig",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@bjorn3/browser_wasi_shim": "^0.4.1",
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

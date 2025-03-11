@@ -1,7 +1,9 @@
-//const std = @import("std");
+const std = @import("std");
 const binaryen = @import("binaryen");
 
-pub fn main() !void {
+pub fn main() !void {}
+
+pub export fn run() [*]u8 {
     const src =
         \\(module
         \\ (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
@@ -25,7 +27,9 @@ pub fn main() !void {
     ;
     const mod = binaryen.Module.parseText(src);
     defer mod.deinit();
-    const out = mod.emitText();
-    defer binaryen.freeEmit(out);
-    //try std.testing.expectEqualStrings(src, out);
+    //const out = mod.emitText();
+    const emitted = mod.emitBinary("./module.map");
+    //defer binaryen.freeEmit(emitted.binary);
+    //defer binaryen.freeEmit(emitted.sourceMap);
+    return emitted.binary.ptr;
 }

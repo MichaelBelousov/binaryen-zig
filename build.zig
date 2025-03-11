@@ -475,13 +475,6 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(lib);
 
-    // FIXME
-    if (target.result.cpu.arch.isWasm()) {
-        lib.shared_memory = true;
-        lib.export_memory = true;
-        lib.import_memory = true;
-    }
-
     const exe = b.addExecutable(.{
         .name = "wasm-test",
         .root_source_file = b.path("./wasm-test.zig"),
@@ -491,8 +484,15 @@ pub fn build(b: *std.Build) void {
         .strip = optimize != .Debug,
     });
     exe.root_module.addImport("binaryen", binaryen_mod);
-    //exe.linkLibCpp();
-    //exe.linkLibrary(lib);
+
+    exe.root_module.export_symbol_names = &.{
+        "run",
+    };
+    exe.rdynamic = true; // https://github.com/ziglang/zig/issues/14139
+    exe.entry = .disabled;
+    //exe.shared_memory = true;
+    exe.export_memory = true;
+    //exe.import_memory = true;
 
     const tests = b.addTest(.{
         .root_source_file = b.path("test.zig"),
