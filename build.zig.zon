@@ -1,5 +1,5 @@
 .{
-    .name = "binaryen-zig",
+    .name = .binaryen,
     .version = "0.1.0",
     .minimum_zig_version = "0.13.0",
     .dependencies = .{
@@ -10,6 +10,7 @@
             .path = "../binaryen",
         },
     },
+    .fingerprint = 0x57f8a93b10fa5992, // changing this is a security risk, see zig docs
     .paths = .{
         "build.zig",
         "build.zig.zon",

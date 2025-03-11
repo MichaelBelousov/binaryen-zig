@@ -40,7 +40,7 @@ pub fn build(b: *std.Build) void {
 
     b.getInstallStep().dependOn(&lib.step);
 
-    lib.defineCMacro("BUILD_STATIC_LIBRARY", null);
+    lib.root_module.addCMacro("BUILD_STATIC_LIBRARY", "");
 
     if (single_threaded) {
         lib.root_module.addCMacro("BINARYEN_SINGLE_THREADED", "1");
@@ -56,18 +56,18 @@ pub fn build(b: *std.Build) void {
     lib.addIncludePath(origin_dep.path("third_party/FP16/include"));
 
     if (dwarf) {
-        lib.defineCMacro("BUILD_LLVM_DWARF", null);
+        lib.root_module.addCMacro("BUILD_LLVM_DWARF", "");
         lib.addIncludePath(origin_dep.path("third_party/llvm-project/include"));
     }
     if (!assertions) {
-        lib.defineCMacro("NDEBUG", null);
+        lib.root_module.addCMacro("NDEBUG", "");
     }
 
     // TODO: wasm target? Might require emscripten though
 
     if (target.result.os.tag == .windows) {
-        lib.defineCMacro("_GNU_SOURCE", null);
-        lib.defineCMacro("__STDC_FORMAT_MACROS", null);
+        lib.root_module.addCMacro("_GNU_SOURCE", "");
+        lib.root_module.addCMacro("__STDC_FORMAT_MACROS", "");
         // TODO: -wl,/stack:8388608
     }
 
@@ -143,9 +143,34 @@ pub fn build(b: *std.Build) void {
     lib.addCSourceFiles(.{
         .root = origin_dep.path("."),
         .files = &.{
+            "src/analysis/cfg.cpp",
+        },
+        .flags = flags,
+    });
+
+    lib.addCSourceFiles(.{
+        .root = origin_dep.path("."),
+        .files = &.{
             "src/emscripten-optimizer/optimizer-shared.cpp",
             "src/emscripten-optimizer/parser.cpp",
             "src/emscripten-optimizer/simple_ast.cpp",
+        },
+        .flags = flags,
+    });
+
+    lib.addCSourceFiles(.{
+        .root = origin_dep.path("."),
+        .files = &.{
+            "src/parser/wat-parser.cpp",
+            "src/parser/lexer.cpp",
+            "src/parser/wast-parser.cpp",
+            "src/parser/context-decls.cpp",
+            "src/parser/parse-1-decls.cpp",
+            "src/parser/parse-2-typedefs.cpp",
+            "src/parser/parse-3-implicit-types.cpp",
+            "src/parser/parse-4-module-types.cpp",
+            "src/parser/parse-5-defs.cpp",
+            "src/parser/context-defs.cpp",
         },
         .flags = flags,
     });
