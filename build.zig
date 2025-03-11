@@ -5,6 +5,7 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
     const assertions = b.option(bool, "assertions", "Enable assertions (default true in debug builds)") orelse (optimize == .Debug);
     const dwarf = b.option(bool, "dwarf", "Enable full DWARF support") orelse true;
+    const single_threaded = b.option(bool, "single_threaded", "compile without threading support") orelse target.result.cpu.arch.isWasm();
 
     const origin_dep = b.dependency("binaryen", .{});
 
@@ -27,14 +28,25 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .root_source_file = b.path("wasm_intrinsics.zig"),
-        .single_threaded = false,
+        .single_threaded = true,
+    });
+
+    // TODO: if we need this...
+    lib.root_module.addAnonymousImport("binaryen-wat-intrinsics", .{
+        .root_source_file = origin_dep.path("src/passes/wasm-intrinsics.wat"),
+        .optimize = optimize,
+        .target = web_target,
     });
 
     b.getInstallStep().dependOn(&lib.step);
 
     lib.defineCMacro("BUILD_STATIC_LIBRARY", null);
 
-    if (target.result.isWasm()) {
+    if (single_threaded) {
+        lib.root_module.addCMacro("BINARYEN_SINGLE_THREADED", "1");
+    }
+
+    if (target.result.cpu.arch.isWasm()) {
         lib.shared_memory = true;
         lib.export_memory = true;
         lib.import_memory = true;
@@ -287,11 +299,20 @@ pub fn build(b: *std.Build) void {
             "src/support/string.cpp",
             "src/support/suffix_tree.cpp",
             "src/support/suffix_tree_node.cpp",
-            "src/support/threads.cpp",
             "src/support/utilities.cpp",
         },
         .flags = flags,
     });
+
+    if (!single_threaded) {
+        lib.addCSourceFiles(.{
+            .root = origin_dep.path("."),
+            .files = &.{
+                "src/support/threads.cpp",
+            },
+            .flags = flags,
+        });
+    }
 
     lib.addCSourceFiles(.{
         .root = origin_dep.path("."),
@@ -408,12 +429,12 @@ pub fn build(b: *std.Build) void {
     lib.linkLibCpp();
 
     b.installArtifact(lib);
-    lib.installHeader(b.path("src/binaryen-c.h"), "binaryen/binaryen.h");
-    lib.installHeader(b.path("src/wasm-delegations.def"), "binaryen/wasm-delegations.def");
+    lib.installHeader(origin_dep.path("src/binaryen-c.h"), "binaryen/binaryen.h");
+    lib.installHeader(origin_dep.path("src/wasm-delegations.def"), "binaryen/wasm-delegations.def");
 
     const binaryen_mod = b.addModule("binaryen", .{
         .root_source_file = b.path("binaryen.zig"),
-        .single_threaded = false, // NOTE: wasi builds require this
+        .single_threaded = true, // NOTE: wasi builds require this
         .target = target,
     });
     binaryen_mod.linkLibrary(lib);
@@ -422,7 +443,7 @@ pub fn build(b: *std.Build) void {
     const exe = b.addExecutable(.{
         .name = "wasm-test",
         .root_source_file = b.path("./wasm-test.zig"),
-        .single_threaded = false,
+        .single_threaded = true,
         .target = web_target,
     });
     exe.root_module.addImport("binaryen", binaryen_mod);
