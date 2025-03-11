@@ -3,7 +3,8 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
     const web_target_query = std.Target.Query{
         .cpu_arch = .wasm32,
-        .os_tag = .wasi, // can't use freestanding cuz binaryen
+        //.os_tag = .wasi,
+        .os_tag = .emscripten, // can't use freestanding cuz binaryen
         // https://github.com/ziglang/zig/pull/16207
         .cpu_features_add = std.Target.wasm.featureSet(&.{
             .atomics,
@@ -23,7 +24,8 @@ pub fn build(b: *std.Build) void {
     _ = assertions;
 
     // FIXME: why does this not error on web build?
-    const dwarf = b.option(bool, "dwarf", "Enable full DWARF support") orelse !target.result.cpu.arch.isWasm();
+    //const dwarf = b.option(bool, "dwarf", "Enable full DWARF support") orelse !target.result.cpu.arch.isWasm();
+    const dwarf = b.option(bool, "dwarf", "Enable full DWARF support") orelse true;
     const single_threaded = b.option(bool, "single_threaded", "compile without threading support") orelse target.result.cpu.arch.isWasm();
 
     const origin_dep = b.dependency("binaryen", .{});
@@ -49,6 +51,7 @@ pub fn build(b: *std.Build) void {
 
     binaryen_mod.addIncludePath(origin_dep.path("src"));
     binaryen_mod.addIncludePath(origin_dep.path("third_party/FP16/include"));
+    //binaryen_mod.addSystemIncludePath(.{ .cwd_relative = "/usr/lib/emscripten/system/lib/libc/musl/include" });
 
     binaryen_mod.addIncludePath(origin_dep.path("third_party/llvm-project/include"));
     if (dwarf) {

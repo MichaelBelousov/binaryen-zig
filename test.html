@@ -1,0 +1,10 @@
+<html>
+  <body>
+
+  </body>
+  <script type="module">
+  const wasm = await WebAssembly.instantiateStreaming(fetch("./zig-out/bin/wasm-test.wasm"), {});
+    console.log(wasm.instance.exports.run());
+  </script>
+</html>
+
