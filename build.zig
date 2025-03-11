@@ -29,7 +29,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .root_source_file = b.path("wasm_intrinsics.zig"),
-        .single_threaded = true,
+        .single_threaded = single_threaded,
     });
 
     lib.root_module.addAnonymousImport("binaryen-wat-intrinsics", .{
