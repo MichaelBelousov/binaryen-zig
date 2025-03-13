@@ -6,18 +6,16 @@
     import { WASI, File, OpenFile, ConsoleStdout, PreopenDirectory } from 'https://cdn.jsdelivr.net/npm/@bjorn3/browser_wasi_shim@0.4.1/+esm' 
     //import { WASI, File, OpenFile, ConsoleStdout, PreopenDirectory } from "@bjorn3/browser_wasi_shim";
 
-    let args = ["bin", "arg1", "arg2"];
+    let args = ["bin", "arg1"];
     let env = ["FOO=bar"];
     let fds = [
       new OpenFile(new File([])), // stdin
       ConsoleStdout.lineBuffered(msg => console.log(`[WASI stdout] ${msg}`)),
       ConsoleStdout.lineBuffered(msg => console.warn(`[WASI stderr] ${msg}`)),
-      new PreopenDirectory(".", [
-        ["example.c", new File(new TextEncoder("utf-8").encode(`#include "a"`))],
-        ["hello.rs", new File(new TextEncoder("utf-8").encode(`fn main() { println!("Hello World!"); }`))],
-      ]),
+      new PreopenDirectory(".", []),
     ];
     let wasi = new WASI(args, env, fds);
+
 
     const wasm = await WebAssembly.compileStreaming(fetch("zig-out/bin/wasm-test.wasm"));
     let inst = await WebAssembly.instantiate(wasm, {
@@ -25,8 +23,14 @@
       "env": {},
     });
     wasi.start(inst);
-    const result = inst.exports.run();
-    console.log(result);
+    // FIXME: weird wait for wasi init?
+    await new Promise(resolve => setTimeout(resolve, 1_000));
+    const resultPtr = inst.exports.run();
+    const resultLen = new DataView(inst.exports.memory.buffer, inst.exports.length_transfer_buf.value, 4).getUint32(0, true);
+    const wasm2Bytes = new Uint8Array(inst.exports.memory.buffer, resultPtr, resultLen);
+    const wasm2 = await WebAssembly.instantiate(wasm2Bytes, {});
+    const wasm2Result = wasm2.instance.exports.add(2, 3);
+    console.log(wasm2Result);
   </script>
 </html>
 

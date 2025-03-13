@@ -3,6 +3,8 @@ const binaryen = @import("binaryen");
 
 pub fn main() !void {}
 
+export var length_transfer_buf: usize = 0;
+
 pub export fn run() [*]u8 {
     const src =
         \\(module
@@ -25,11 +27,18 @@ pub export fn run() [*]u8 {
         \\)
         \\
     ;
+    // wtf: why does it exit in most cases...
+    //std.debug.print("about to parse...\n", .{});
     const mod = binaryen.Module.parseText(src);
+    //std.debug.print("parsed!\n", .{});
     defer mod.deinit();
     //const out = mod.emitText();
-    const emitted = mod.emitBinary("./module.map");
+    //std.debug.print("going to emit...\n", .{});
+    //const emitted = mod.emitBinary("./module.map");
+    const emitted = mod.emitBinary(null);
+    //std.debug.print("emitted!\n", .{});
     //defer binaryen.freeEmit(emitted.binary);
     //defer binaryen.freeEmit(emitted.sourceMap);
+    length_transfer_buf = emitted.binary.len;
     return emitted.binary.ptr;
 }
