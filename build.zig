@@ -19,7 +19,8 @@ pub fn build(b: *std.Build) void {
     });
     const optimize = b.standardOptimizeOption(.{});
 
-    const assertions = b.option(bool, "assertions", "Enable assertions (default true in debug builds)") orelse (optimize == .Debug);
+    // FIXME: this causes errors right now...
+    const assertions = b.option(bool, "assertions", "Enable assertions (default true in debug builds)") orelse false;
     _ = assertions;
 
     // FIXME: why does this not error on web build?
@@ -33,6 +34,7 @@ pub fn build(b: *std.Build) void {
         .single_threaded = single_threaded,
         .target = target,
         .optimize = optimize,
+        .sanitize_c = false,
     });
 
     binaryen_mod.addAnonymousImport("binaryen-wat-intrinsics", .{
@@ -55,7 +57,7 @@ pub fn build(b: *std.Build) void {
         binaryen_mod.addCMacro("BUILD_LLVM_DWARF", "");
     }
 
-    // FIXME: NDEBUG seems defined by zig or something?
+    // FIXME: NDEBUG seems defined by zig/clang or something?
     // if (!assertions) {
     //     binaryen_mod.addCMacro("NDEBUG", "");
     // }
@@ -383,6 +385,9 @@ pub fn build(b: *std.Build) void {
             "third_party/llvm-project/SmallVector.cpp",
             "third_party/llvm-project/ErrorHandling.cpp",
             "third_party/llvm-project/Twine.cpp",
+            "third_party/llvm-project/raw_ostream.cpp",
+            "third_party/llvm-project/NativeFormatting.cpp",
+            "third_party/llvm-project/Debug.cpp",
         },
         .flags = extraFlags(b, flags, llvm_flags.items),
     });
@@ -394,7 +399,6 @@ pub fn build(b: *std.Build) void {
                 "third_party/llvm-project/Binary.cpp",
                 "third_party/llvm-project/ConvertUTF.cpp",
                 "third_party/llvm-project/DataExtractor.cpp",
-                "third_party/llvm-project/Debug.cpp",
                 "third_party/llvm-project/DJB.cpp",
                 "third_party/llvm-project/Dwarf.cpp",
                 "third_party/llvm-project/dwarf2yaml.cpp",
@@ -436,12 +440,10 @@ pub fn build(b: *std.Build) void {
                 "third_party/llvm-project/MCRegisterInfo.cpp",
                 "third_party/llvm-project/MD5.cpp",
                 "third_party/llvm-project/MemoryBuffer.cpp",
-                "third_party/llvm-project/NativeFormatting.cpp",
                 "third_party/llvm-project/ObjectFile.cpp",
                 "third_party/llvm-project/obj2yaml_Error.cpp",
                 "third_party/llvm-project/Optional.cpp",
                 "third_party/llvm-project/Path.cpp",
-                "third_party/llvm-project/raw_ostream.cpp",
                 "third_party/llvm-project/ScopedPrinter.cpp",
                 "third_party/llvm-project/SourceMgr.cpp",
                 "third_party/llvm-project/StringMap.cpp",
