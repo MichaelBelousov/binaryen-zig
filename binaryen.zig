@@ -12,24 +12,103 @@ pub fn freeEmit(buf: []u8) void {
     byn.free(buf.ptr);
 }
 
+// NOTE: since this appears to be a bit mask, might be better to make this not an enum
+pub const Features = enum(byn.BinaryenFeatures) {
+    _,
+
+    pub fn set(features: []const Features) Features {
+        var initial: byn.BinaryenFeatures = 0;
+        for (features) |feature| {
+            initial |= @intFromEnum(feature);
+        }
+        return @enumFromInt(initial);
+    }
+
+    // NOTE: would be nice to force inline these...
+    pub fn MVP() Features {
+        return @enumFromInt(byn.BinaryenFeatureMVP());
+    }
+    pub fn Atomics() Features {
+        return @enumFromInt(byn.BinaryenFeatureAtomics());
+    }
+    pub fn BulkMemory() Features {
+        return @enumFromInt(byn.BinaryenFeatureBulkMemory());
+    }
+    pub fn MutableGlobals() Features {
+        return @enumFromInt(byn.BinaryenFeatureMutableGlobals());
+    }
+    pub fn NontrappingFPToInt() Features {
+        return @enumFromInt(byn.BinaryenFeatureNontrappingFPToInt());
+    }
+    pub fn SignExt() Features {
+        return @enumFromInt(byn.BinaryenFeatureSignExt());
+    }
+    pub fn SIMD128() Features {
+        return @enumFromInt(byn.BinaryenFeatureSIMD128());
+    }
+    pub fn ExceptionHandling() Features {
+        return @enumFromInt(byn.BinaryenFeatureExceptionHandling());
+    }
+    pub fn TailCall() Features {
+        return @enumFromInt(byn.BinaryenFeatureTailCall());
+    }
+    pub fn ReferenceTypes() Features {
+        return @enumFromInt(byn.BinaryenFeatureReferenceTypes());
+    }
+    pub fn Multivalue() Features {
+        return @enumFromInt(byn.BinaryenFeatureMultivalue());
+    }
+    pub fn GC() Features {
+        return @enumFromInt(byn.BinaryenFeatureGC());
+    }
+    pub fn Memory64() Features {
+        return @enumFromInt(byn.BinaryenFeatureMemory64());
+    }
+    pub fn RelaxedSIMD() Features {
+        return @enumFromInt(byn.BinaryenFeatureRelaxedSIMD());
+    }
+    pub fn ExtendedConst() Features {
+        return @enumFromInt(byn.BinaryenFeatureExtendedConst());
+    }
+    pub fn Strings() Features {
+        return @enumFromInt(byn.BinaryenFeatureStrings());
+    }
+    pub fn MultiMemory() Features {
+        return @enumFromInt(byn.BinaryenFeatureMultiMemory());
+    }
+    pub fn All() Features {
+        return @enumFromInt(byn.BinaryenFeatureAll());
+    }
+};
+
 pub const Module = opaque {
     pub fn init() *Module {
         const mod = byn.BinaryenModuleCreate();
         return @ptrCast(mod);
     }
+
     pub fn deinit(self: *Module) void {
         byn.BinaryenModuleDispose(self.c());
     }
 
-    // TODO: error handling
+    // TODO: remove for my purposes?
     pub fn parseText(wat: [*:0]const u8) *Module {
         const mod = byn.BinaryenModuleParse(wat);
         return @ptrCast(mod);
     }
-    // TODO: error handling
+
+    // TODO: remove for my purposes?
     pub fn readBinary(wasm: []const u8) *Module {
         const mod = byn.BinaryenModuleRead(@constCast(wasm.ptr), wasm.len);
         return @ptrCast(mod);
+    }
+
+    pub fn getFeatures(self: *@This()) Features {
+        return @enumFromInt(byn.BinaryenModuleGetFeatures(self.c()));
+    }
+
+    pub fn setFeatures(self: *@This(), features: Features) void {
+        return byn.BinaryenModuleSetFeatures(self.c(), @intFromEnum(features));
     }
 
     pub fn emitText(self: *Module) [:0]u8 {
@@ -74,8 +153,18 @@ pub const Module = opaque {
 pub const Index = byn.BinaryenIndex;
 
 pub const Expression = opaque {
+    inline fn c(self: *Expression) byn.BinaryenExpressionRef {
+        return @ptrCast(self);
+    }
+
     pub const Op = enum(byn.BinaryenOp) {
         _,
+
+        inline fn c(self: Op) byn.BinaryenOp {
+            return @intFromEnum(self);
+        }
+
+        // TODO: mark everything as inline
 
         pub fn addInt32() Op {
             return @enumFromInt(byn.BinaryenAddInt32());
@@ -307,14 +396,35 @@ pub const Expression = opaque {
             return @enumFromInt(byn.BinaryenReinterpretInt64());
         }
 
-        inline fn c(self: Op) byn.BinaryenOp {
-            return @intFromEnum(self);
+        // strings
+        pub fn BinaryenStringNewLossyUTF8Array() Op {
+            return byn.BinaryenStringNewLossyUTF8Array();
+        }
+        pub fn BinaryenStringNewWTF16Array() Op {
+            return byn.BinaryenStringNewWTF16Array();
+        }
+        pub fn BinaryenStringNewFromCodePoint() Op {
+            return byn.BinaryenStringNewFromCodePoint();
+        }
+        pub fn BinaryenStringMeasureUTF8() Op {
+            return byn.BinaryenStringMeasureUTF8();
+        }
+        pub fn BinaryenStringMeasureWTF16() Op {
+            return byn.BinaryenStringMeasureWTF16();
+        }
+        pub fn BinaryenStringEncodeLossyUTF8Array() Op {
+            return byn.BinaryenStringEncodeLossyUTF8Array();
+        }
+        pub fn BinaryenStringEncodeWTF16Array() Op {
+            return byn.BinaryenStringEncodeWTF16Array();
+        }
+        pub fn BinaryenStringEqEqual() Op {
+            return byn.BinaryenStringEqEqual();
+        }
+        pub fn BinaryenStringEqCompare() Op {
+            return byn.BinaryenStringEqCompare();
         }
     };
-
-    inline fn c(self: *Expression) byn.BinaryenExpressionRef {
-        return @ptrCast(self);
-    }
 
     pub inline fn localGet(module: *Module, index: Index, type_: Type) *Expression {
         return @ptrCast(byn.BinaryenLocalGet(module.c(), index, @intFromEnum(type_)));
@@ -322,6 +432,10 @@ pub const Expression = opaque {
 
     pub inline fn binaryOp(module: *Module, op: Op, lhs: *Expression, rhs: *Expression) *Expression {
         return @ptrCast(byn.BinaryenBinary(module.c(), op.c(), lhs.c(), rhs.c()));
+    }
+
+    pub inline fn stringConst(module: *Module, name: [:0]const u8) *Expression {
+        return byn.BinaryenStringConst(module, name.ptr);
     }
 };
 
@@ -390,6 +504,8 @@ pub const TypeBuilder = opaque {
     }
 
     pub const ErrorReason = enum(byn.TypeBuilderErrorReason) {
+        _,
+
         pub fn selfSupertype() @This() {
             return byn.TypeBuilderErrorReasonSelfSupertype();
         }
