@@ -80,32 +80,232 @@ pub const Expression = opaque {
         pub fn addInt32() Op {
             return @enumFromInt(byn.BinaryenAddInt32());
         }
+        pub fn addInt64() Op {
+            return @enumFromInt(byn.BinaryenAddInt64());
+        }
+        pub fn addFloat32() Op {
+            return @enumFromInt(byn.BinaryenAddFloat32());
+        }
+        pub fn addFloat64() Op {
+            return @enumFromInt(byn.BinaryenAddFloat64());
+        }
+        pub fn @"if"() Op {
+            return @enumFromInt(byn.BinaryenIf());
+        }
+        pub fn nop() Op {
+            return @enumFromInt(byn.BinaryenNop());
+        }
+        pub fn localSet() Op {
+            return @enumFromInt(byn.BinaryenLocalSet());
+        }
+        pub fn popcntInt32() Op {
+            return @enumFromInt(byn.BinaryenPopcntInt32());
+        }
+        pub fn popcntInt64() Op {
+            return @enumFromInt(byn.BinaryenPopcntInt64());
+        }
+        pub fn pop() Op {
+            return @enumFromInt(byn.BinaryenPop());
+        }
+        pub fn subInt32() Op {
+            return @enumFromInt(byn.BinaryenSubInt32());
+        }
+        pub fn subInt64() Op {
+            return @enumFromInt(byn.BinaryenSubInt64());
+        }
+        pub fn subFloat32() Op {
+            return @enumFromInt(byn.BinaryenSubFloat32());
+        }
+        pub fn subFloat64() Op {
+            return @enumFromInt(byn.BinaryenSubFloat64());
+        }
+        pub fn divSInt32() Op {
+            return @enumFromInt(byn.BinaryenDivSInt32());
+        }
+        pub fn divUInt32() Op {
+            return @enumFromInt(byn.BinaryenDivUInt32());
+        }
+        pub fn divSInt64() Op {
+            return @enumFromInt(byn.BinaryenDivSInt64());
+        }
+        pub fn divUInt64() Op {
+            return @enumFromInt(byn.BinaryenDivUInt64());
+        }
+        pub fn divFloat32() Op {
+            return @enumFromInt(byn.BinaryenDivFloat32());
+        }
+        pub fn divFloat64() Op {
+            return @enumFromInt(byn.BinaryenDivFloat64());
+        }
+        pub fn mulInt32() Op {
+            return @enumFromInt(byn.BinaryenMulInt32());
+        }
+        pub fn mulInt64() Op {
+            return @enumFromInt(byn.BinaryenMulInt64());
+        }
+        pub fn mulFloat64() Op {
+            return @enumFromInt(byn.BinaryenMulFloat64());
+        }
+        pub fn mulFloat32() Op {
+            return @enumFromInt(byn.BinaryenMulFloat32());
+        }
+        pub fn maxFloat32() Op {
+            return @enumFromInt(byn.BinaryenMaxFloat32());
+        }
+        pub fn maxFloat64() Op {
+            return @enumFromInt(byn.BinaryenMaxFloat64());
+        }
 
-        // byn.BinaryenAddInt64
-        // byn.BinaryenAddFloat32
-        // byn.BinaryenAddFloat64
-        // byn.BinaryenIf
-        // byn.BinaryenNop
-        // byn.BinaryenLocalSet
-        // byn.BinaryenPopcntInt32
-        // byn.BinaryenPopcntInt64
-        // byn.BinaryenPop
-        // byn.BinaryenSubInt32
-        // byn.BinaryenSubInt64
-        // byn.BinaryenSubFloat32
-        // byn.BinaryenSubFloat64
-        // byn.BinaryenDivSInt32
-        // byn.BinaryenDivUInt32
-        // byn.BinaryenDivSInt64
-        // byn.BinaryenDivUInt64
-        // byn.BinaryenDivFloat32
-        // byn.BinaryenDivFloat64
-        // byn.BinaryenMulInt32
-        // byn.BinaryenMulInt64
-        // byn.BinaryenMulFloat64
-        // byn.BinaryenMulFloat32
-        // byn.BinaryenMaxFloat32
-        // byn.BinaryenMaxFloat64
+        pub fn extendS8Int32() Op {
+            return @enumFromInt(byn.BinaryenExtendS8Int32());
+        }
+        pub fn extendS16Int32() Op {
+            return @enumFromInt(byn.BinaryenExtendS16Int32());
+        }
+        pub fn extendS8Int64() Op {
+            return @enumFromInt(byn.BinaryenExtendS8Int64());
+        }
+        pub fn extendS16Int64() Op {
+            return @enumFromInt(byn.BinaryenExtendS16Int64());
+        }
+        pub fn extendS32Int64() Op {
+            return @enumFromInt(byn.BinaryenExtendS32Int64());
+        }
+        pub fn clzInt32() Op {
+            return @enumFromInt(byn.BinaryenClzInt32());
+        }
+        pub fn ctzInt32() Op {
+            return @enumFromInt(byn.BinaryenCtzInt32());
+        }
+        pub fn negFloat32() Op {
+            return @enumFromInt(byn.BinaryenNegFloat32());
+        }
+        pub fn absFloat32() Op {
+            return @enumFromInt(byn.BinaryenAbsFloat32());
+        }
+        pub fn ceilFloat32() Op {
+            return @enumFromInt(byn.BinaryenCeilFloat32());
+        }
+        pub fn floorFloat32() Op {
+            return @enumFromInt(byn.BinaryenFloorFloat32());
+        }
+        pub fn truncFloat32() Op {
+            return @enumFromInt(byn.BinaryenTruncFloat32());
+        }
+        pub fn nearestFloat32() Op {
+            return @enumFromInt(byn.BinaryenNearestFloat32());
+        }
+        pub fn sqrtFloat32() Op {
+            return @enumFromInt(byn.BinaryenSqrtFloat32());
+        }
+        pub fn eqZInt32() Op {
+            return @enumFromInt(byn.BinaryenEqZInt32());
+        }
+        pub fn clzInt64() Op {
+            return @enumFromInt(byn.BinaryenClzInt64());
+        }
+        pub fn ctzInt64() Op {
+            return @enumFromInt(byn.BinaryenCtzInt64());
+        }
+        pub fn negFloat64() Op {
+            return @enumFromInt(byn.BinaryenNegFloat64());
+        }
+        pub fn absFloat64() Op {
+            return @enumFromInt(byn.BinaryenAbsFloat64());
+        }
+        pub fn ceilFloat64() Op {
+            return @enumFromInt(byn.BinaryenCeilFloat64());
+        }
+        pub fn floorFloat64() Op {
+            return @enumFromInt(byn.BinaryenFloorFloat64());
+        }
+        pub fn truncFloat64() Op {
+            return @enumFromInt(byn.BinaryenTruncFloat64());
+        }
+        pub fn nearestFloat64() Op {
+            return @enumFromInt(byn.BinaryenNearestFloat64());
+        }
+        pub fn sqrtFloat64() Op {
+            return @enumFromInt(byn.BinaryenSqrtFloat64());
+        }
+        pub fn eqZInt64() Op {
+            return @enumFromInt(byn.BinaryenEqZInt64());
+        }
+        pub fn extendSInt32() Op {
+            return @enumFromInt(byn.BinaryenExtendSInt32());
+        }
+        pub fn extendUInt32() Op {
+            return @enumFromInt(byn.BinaryenExtendUInt32());
+        }
+        pub fn wrapInt64() Op {
+            return @enumFromInt(byn.BinaryenWrapInt64());
+        }
+        pub fn truncSFloat32ToInt32() Op {
+            return @enumFromInt(byn.BinaryenTruncSFloat32ToInt32());
+        }
+        pub fn truncSFloat32ToInt64() Op {
+            return @enumFromInt(byn.BinaryenTruncSFloat32ToInt64());
+        }
+        pub fn truncUFloat32ToInt32() Op {
+            return @enumFromInt(byn.BinaryenTruncUFloat32ToInt32());
+        }
+        pub fn truncUFloat32ToInt64() Op {
+            return @enumFromInt(byn.BinaryenTruncUFloat32ToInt64());
+        }
+        pub fn truncSFloat64ToInt32() Op {
+            return @enumFromInt(byn.BinaryenTruncSFloat64ToInt32());
+        }
+        pub fn truncSFloat64ToInt64() Op {
+            return @enumFromInt(byn.BinaryenTruncSFloat64ToInt64());
+        }
+        pub fn truncUFloat64ToInt32() Op {
+            return @enumFromInt(byn.BinaryenTruncUFloat64ToInt32());
+        }
+        pub fn truncUFloat64ToInt64() Op {
+            return @enumFromInt(byn.BinaryenTruncUFloat64ToInt64());
+        }
+        pub fn reinterpretFloat32() Op {
+            return @enumFromInt(byn.BinaryenReinterpretFloat32());
+        }
+        pub fn reinterpretFloat64() Op {
+            return @enumFromInt(byn.BinaryenReinterpretFloat64());
+        }
+        pub fn convertSInt32ToFloat32() Op {
+            return @enumFromInt(byn.BinaryenConvertSInt32ToFloat32());
+        }
+        pub fn convertSInt32ToFloat64() Op {
+            return @enumFromInt(byn.BinaryenConvertSInt32ToFloat64());
+        }
+        pub fn convertUInt32ToFloat32() Op {
+            return @enumFromInt(byn.BinaryenConvertUInt32ToFloat32());
+        }
+        pub fn convertUInt32ToFloat64() Op {
+            return @enumFromInt(byn.BinaryenConvertUInt32ToFloat64());
+        }
+        pub fn convertSInt64ToFloat32() Op {
+            return @enumFromInt(byn.BinaryenConvertSInt64ToFloat32());
+        }
+        pub fn convertSInt64ToFloat64() Op {
+            return @enumFromInt(byn.BinaryenConvertSInt64ToFloat64());
+        }
+        pub fn convertUInt64ToFloat32() Op {
+            return @enumFromInt(byn.BinaryenConvertUInt64ToFloat32());
+        }
+        pub fn convertUInt64ToFloat64() Op {
+            return @enumFromInt(byn.BinaryenConvertUInt64ToFloat64());
+        }
+        pub fn promoteFloat32() Op {
+            return @enumFromInt(byn.BinaryenPromoteFloat32());
+        }
+        pub fn demoteFloat64() Op {
+            return @enumFromInt(byn.BinaryenDemoteFloat64());
+        }
+        pub fn reinterpretInt32() Op {
+            return @enumFromInt(byn.BinaryenReinterpretInt32());
+        }
+        pub fn reinterpretInt64() Op {
+            return @enumFromInt(byn.BinaryenReinterpretInt64());
+        }
 
         inline fn c(self: Op) byn.BinaryenOp {
             return @intFromEnum(self);
@@ -126,8 +326,51 @@ pub const Expression = opaque {
 };
 
 pub const Function = opaque {
-    inline fn c(self: *Function) byn.BinaryenFunctionRef {
+    inline fn c(self: *@This()) byn.BinaryenFunctionRef {
         return @ptrCast(self);
+    }
+};
+
+pub const Relooper = opaque {
+    const Block = opaque {
+        inline fn c(self: *@This()) byn.RelooperBlockRef {
+            return @ptrCast(self);
+        }
+    };
+
+    inline fn c(self: *@This()) byn.RelooperRef {
+        return @ptrCast(self);
+    }
+
+    // fn RelooperCreate(module: BinaryenModuleRef) RelooperRef;
+    pub fn create(mod: *Module) *Relooper {
+        const relooper = byn.RelooperCreate(mod.c());
+        return @ptrCast(relooper);
+    }
+
+    // fn RelooperRenderAndDispose(relooper: RelooperRef, entry: RelooperBlockRef, labelHelper: BinaryenIndex) BinaryenExpressionRef;
+    pub fn renderAndDispose(self: *@This(), entry: *Block, label_helper: Index) *Expression {
+        return byn.RelooperRenderAndDispose(self.c(), entry, label_helper);
+    }
+
+    // fn RelooperAddBranch(from: RelooperBlockRef, to: RelooperBlockRef, condition: BinaryenExpressionRef, code: BinaryenExpressionRef) void;
+    pub fn addBranch(self: *@This(), from: *Block, to: *Block, condition: *Expression, code: *Expression) *Expression {
+        return byn.RelooperAddBranch(self.c(), from, to, condition, code);
+    }
+
+    // fn RelooperAddBranchForSwitch(from: RelooperBlockRef, to: RelooperBlockRef, indexes: [*c]BinaryenIndex, numIndexes: BinaryenIndex, code: BinaryenExpressionRef) void;
+    pub fn addBranchForSwitch(self: *@This(), from: *Block, to: *Block, indices: []Index, code: *Expression) *Expression {
+        return byn.RelooperAddBranchForSwitch(self.c(), from, to, indices.ptr, @intCast(indices.len), code);
+    }
+
+    // fn RelooperAddBlock(relooper: RelooperRef, code: BinaryenExpressionRef) RelooperBlockRef;
+    pub fn addBlock(self: *@This(), code: *Expression) *Block {
+        return byn.RelooperAddBlock(self.c(), code);
+    }
+
+    // fn RelooperAddBlockWithSwitch(relooper: RelooperRef, code: BinaryenExpressionRef, condition: BinaryenExpressionRef) RelooperBlockRef;
+    pub fn addBlockWithSwitch(self: *@This(), code: *Expression, condition: *Expression) *Block {
+        return byn.RelooperAddBlockWithSwitch(self.c(), code.c(), condition.c());
     }
 };
 
@@ -214,6 +457,7 @@ pub const Type = enum(usize) {
     pub fn arity(self: Type) u32 {
         return byn.BinaryenTypeArity(@intFromEnum(self));
     }
+
     pub fn expand(self: Type, allocator: std.mem.Allocator) ![]Type {
         const buf = try allocator.alloc(Type, self.arity());
         byn.BinaryenTypeExpand(@intFromEnum(self), @ptrCast(buf.ptr));
