@@ -331,6 +331,92 @@ pub const Function = opaque {
     }
 };
 
+pub const BasicHeapType = byn.BinaryenBasicHeapType;
+pub const HeapType = byn.BinaryenHeapType;
+pub const PackedType = byn.BinaryenPackedType;
+
+pub const TypeBuilder = opaque {
+    inline fn c(self: *@This()) byn.TypeBuilderRef {
+        return @ptrCast(self);
+    }
+
+    pub fn create(size: Index) *@This() {
+        return byn.TypeBuilderCreate(size);
+    }
+
+    pub fn grow(self: *@This(), count: Index) void {
+        return byn.TypeBuilderGrow(self.c(), count);
+    }
+
+    pub fn getSize(self: *@This()) Index {
+        return byn.TypeBuilderGetSize(self.c());
+    }
+
+    pub fn setSignatureType(self: *@This(), index: Index, paramTypes: Type, resultTypes: Type) void {
+        return byn.TypeBuilderSetSignatureType(self.c(), index, @intFromEnum(paramTypes), @intFromEnum(resultTypes));
+    }
+
+    pub fn setStructType(self: *@This(), index: Index, fieldTypes: []Type, fieldPackedTypes: []PackedType, fieldMutables: []bool) void {
+        std.debug.assert(fieldTypes.len == fieldMutables.len and fieldTypes.len == fieldPackedTypes.len);
+        return byn.TypeBuilderSetStructType(self.c(), index, @ptrCast(fieldTypes.ptr), @ptrCast(fieldPackedTypes.ptr), fieldMutables.ptr, fieldTypes.len);
+    }
+
+    pub fn setArrayType(self: *@This(), index: Index, elementType: Type, elementPackedType: PackedType, elementMutable: c_int) void {
+        return byn.TypeBuilderSetArrayType(self.c(), index, @intFromEnum(elementType), @intFromEnum(elementPackedType), elementMutable);
+    }
+
+    pub fn getTempHeapType(self: *@This(), index: Index) HeapType {
+        return byn.TypeBuilderGetTempHeapType(self.c(), index);
+    }
+
+    pub fn getTempTupleType(self: *@This(), types: []Type) Type {
+        return @enumFromInt(byn.TypeBuilderGetTempTupleType(self.c(), @ptrCast(types.ptr), types.len));
+    }
+
+    pub fn getTempRefType(self: *@This(), heapType: HeapType, nullable: c_int) Type {
+        return @enumFromInt(byn.TypeBuilderGetTempRefType(self.c(), heapType, nullable));
+    }
+
+    pub fn setSubType(self: *@This(), index: Index, superType: HeapType) void {
+        return byn.TypeBuilderSetSubType(self.c(), index, superType);
+    }
+
+    pub fn setOpen(self: *@This(), index: Index) void {
+        return byn.TypeBuilderSetOpen(self.c(), index);
+    }
+
+    pub fn createRecGroup(self: *@This(), index: Index, length: Index) void {
+        return byn.TypeBuilderCreateRecGroup(self.c(), index, length);
+    }
+
+    pub const ErrorReason = enum(byn.TypeBuilderErrorReason) {
+        pub fn selfSupertype() @This() {
+            return byn.TypeBuilderErrorReasonSelfSupertype();
+        }
+        pub fn invalidSupertype() @This() {
+            return byn.TypeBuilderErrorReasonInvalidSupertype();
+        }
+        pub fn forwardSupertypeReference() @This() {
+            return byn.TypeBuilderErrorReasonForwardSupertypeReference();
+        }
+        pub fn forwardChildReference() @This() {
+            return byn.TypeBuilderErrorReasonForwardChildReference();
+        }
+    };
+
+    pub fn buildAndDispose(self: *@This(), heapTypes: [:0]HeapType, errorIndex: ?*Index, errorReason: ?*ErrorReason) bool {
+        return byn.TypeBuilderBuildAndDispose(self.c(), heapTypes, errorIndex, errorReason);
+    }
+
+    pub fn setTypeName(module: *Module, heapType: HeapType, name: [:0]const u8) void {
+        return byn.BinaryenModuleSetTypeName(module, heapType, name);
+    }
+
+    pub fn setFieldName(module: *Module, heapType: HeapType, index: Index, name: [:0]const u8) void {
+        return byn.BinaryenModuleSetFieldName(module, heapType, index, name);
+    }
+};
+
 pub const Relooper = opaque {
     const Block = opaque {
         inline fn c(self: *@This()) byn.RelooperBlockRef {
