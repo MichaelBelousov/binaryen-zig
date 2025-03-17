@@ -437,6 +437,229 @@ pub const Expression = opaque {
     pub inline fn stringConst(module: *Module, name: [:0]const u8) *Expression {
         return byn.BinaryenStringConst(module, name.ptr);
     }
+
+    // $ grep ') BinaryenExpressionRef' .zig-cache/o/a5ca0d35ed4df445a517afd4426eb0e2/cimport.zig \
+    // | grep -Po '\w+(?=\()' | sed 's,^,//,' | sort -u | putclip
+
+    //BinaryenArrayCopy
+    //BinaryenArrayCopyGetDestIndex
+    //BinaryenArrayCopyGetDestRef
+    //BinaryenArrayCopyGetLength
+    //BinaryenArrayCopyGetSrcIndex
+    //BinaryenArrayCopyGetSrcRef
+    //BinaryenArrayGet
+    //BinaryenArrayGetGetIndex
+    //BinaryenArrayGetGetRef
+    //BinaryenArrayLen
+    //BinaryenArrayLenGetRef
+    //BinaryenArrayNew
+    //BinaryenArrayNewData
+    //BinaryenArrayNewFixed
+    //BinaryenArrayNewFixedGetValueAt
+    //BinaryenArrayNewFixedRemoveValueAt
+    //BinaryenArrayNewGetInit
+    //BinaryenArrayNewGetSize
+    //BinaryenArraySet
+    //BinaryenArraySetGetIndex
+    //BinaryenArraySetGetRef
+    //BinaryenArraySetGetValue
+    //BinaryenAtomicCmpxchg
+    //BinaryenAtomicCmpxchgGetExpected
+    //BinaryenAtomicCmpxchgGetPtr
+    //BinaryenAtomicCmpxchgGetReplacement
+    //BinaryenAtomicFence
+    //BinaryenAtomicLoad
+    //BinaryenAtomicNotify
+    //BinaryenAtomicNotifyGetNotifyCount
+    //BinaryenAtomicNotifyGetPtr
+    //BinaryenAtomicRMW
+    //BinaryenAtomicRMWGetPtr
+    //BinaryenAtomicRMWGetValue
+    //BinaryenAtomicStore
+    //BinaryenAtomicWait
+    //BinaryenAtomicWaitGetExpected
+    //BinaryenAtomicWaitGetPtr
+    //BinaryenAtomicWaitGetTimeout
+    //BinaryenBinary
+    //BinaryenBinaryGetLeft
+    //BinaryenBinaryGetRight
+
+    pub fn block(module: *Module, name: [:0]const u8, children: []const *Expression, @"type": Type) *Expression {
+        return byn.BinaryenBlock(module.c(), name, children.ptr, @intCast(children.len), @"type");
+    }
+
+    //BinaryenBlockGetChildAt
+    //BinaryenBlockRemoveChildAt
+    //BinaryenBreak
+    //BinaryenBreakGetCondition
+    //BinaryenBreakGetValue
+    //BinaryenBrOn
+    //BinaryenBrOnGetRef
+    //BinaryenCall
+    //BinaryenCallGetOperandAt
+    //BinaryenCallIndirect
+    //BinaryenCallIndirectGetOperandAt
+    //BinaryenCallIndirectGetTarget
+    //BinaryenCallIndirectRemoveOperandAt
+    //BinaryenCallRef
+    //BinaryenCallRefGetOperandAt
+    //BinaryenCallRefGetTarget
+    //BinaryenCallRefRemoveOperandAt
+    //BinaryenCallRemoveOperandAt
+    //BinaryenConst
+    //BinaryenDataDrop
+    //BinaryenDrop
+    //BinaryenDropGetValue
+    //BinaryenElementSegmentGetOffset
+    //BinaryenExpressionCopy
+    //BinaryenFunctionGetBody
+    //BinaryenGlobalGet
+    //BinaryenGlobalGetInitExpr
+    //BinaryenGlobalSet
+    //BinaryenGlobalSetGetValue
+    //BinaryenI31Get
+    //BinaryenI31GetGetI31
+    //BinaryenIf
+    //BinaryenIfGetCondition
+    //BinaryenIfGetIfFalse
+    //BinaryenIfGetIfTrue
+    //BinaryenLoad
+    //BinaryenLoadGetPtr
+    //BinaryenLocalGet
+    //BinaryenLocalSet
+    //BinaryenLocalSetGetValue
+    //BinaryenLocalTee
+    //BinaryenLoop
+    //BinaryenLoopGetBody
+    //BinaryenMemoryCopy
+    //BinaryenMemoryCopyGetDest
+    //BinaryenMemoryCopyGetSize
+    //BinaryenMemoryCopyGetSource
+    //BinaryenMemoryFill
+    //BinaryenMemoryFillGetDest
+    //BinaryenMemoryFillGetSize
+    //BinaryenMemoryFillGetValue
+    //BinaryenMemoryGrow
+    //BinaryenMemoryGrowGetDelta
+    //BinaryenMemoryInit
+    //BinaryenMemoryInitGetDest
+    //BinaryenMemoryInitGetOffset
+    //BinaryenMemoryInitGetSize
+    //BinaryenMemorySize
+    //BinaryenNop
+    //BinaryenPop
+    //BinaryenRefAs
+    //BinaryenRefAsGetValue
+    //BinaryenRefCast
+    //BinaryenRefCastGetRef
+    //BinaryenRefEq
+    //BinaryenRefEqGetLeft
+    //BinaryenRefEqGetRight
+    //BinaryenRefFunc
+    //BinaryenRefI31
+    //BinaryenRefI31GetValue
+    //BinaryenRefIsNull
+    //BinaryenRefIsNullGetValue
+    //BinaryenRefNull
+    //BinaryenRefTest
+    //BinaryenRefTestGetRef
+    //BinaryenRethrow
+    //BinaryenReturn
+    //BinaryenReturnCall
+    //BinaryenReturnCallIndirect
+    //BinaryenReturnGetValue
+    //BinaryenSelect
+    //BinaryenSelectGetCondition
+    //BinaryenSelectGetIfFalse
+    //BinaryenSelectGetIfTrue
+    //BinaryenSIMDExtract
+    //BinaryenSIMDExtractGetVec
+    //BinaryenSIMDLoad
+    //BinaryenSIMDLoadGetPtr
+    //BinaryenSIMDLoadStoreLane
+    //BinaryenSIMDLoadStoreLaneGetPtr
+    //BinaryenSIMDLoadStoreLaneGetVec
+    //BinaryenSIMDReplace
+    //BinaryenSIMDReplaceGetValue
+    //BinaryenSIMDReplaceGetVec
+    //BinaryenSIMDShift
+    //BinaryenSIMDShiftGetShift
+    //BinaryenSIMDShiftGetVec
+    //BinaryenSIMDShuffle
+    //BinaryenSIMDShuffleGetLeft
+    //BinaryenSIMDShuffleGetRight
+    //BinaryenSIMDTernary
+    //BinaryenSIMDTernaryGetA
+    //BinaryenSIMDTernaryGetB
+    //BinaryenSIMDTernaryGetC
+    //BinaryenStore
+    //BinaryenStoreGetPtr
+    //BinaryenStoreGetValue
+    //BinaryenStringConcat
+    //BinaryenStringConcatGetLeft
+    //BinaryenStringConcatGetRight
+    //BinaryenStringConst
+    //BinaryenStringEncode
+    //BinaryenStringEncodeGetArray
+    //BinaryenStringEncodeGetStart
+    //BinaryenStringEncodeGetStr
+    //BinaryenStringEq
+    //BinaryenStringEqGetLeft
+    //BinaryenStringEqGetRight
+    //BinaryenStringIterMove
+    //BinaryenStringIterNext
+    //BinaryenStringMeasure
+    //BinaryenStringMeasureGetRef
+    //BinaryenStringNew
+    //BinaryenStringNewGetEnd
+    //BinaryenStringNewGetRef
+    //BinaryenStringNewGetStart
+    //BinaryenStringSliceIter
+    //BinaryenStringSliceWTF
+    //BinaryenStringSliceWTFGetEnd
+    //BinaryenStringSliceWTFGetRef
+    //BinaryenStringSliceWTFGetStart
+    //BinaryenStringWTF16Get
+    //BinaryenStringWTF16GetGetPos
+    //BinaryenStringWTF16GetGetRef
+    //BinaryenStringWTF8Advance
+    //BinaryenStructGet
+    //BinaryenStructGetGetRef
+    //BinaryenStructNew
+    //BinaryenStructNewGetOperandAt
+    //BinaryenStructNewRemoveOperandAt
+    //BinaryenStructSet
+    //BinaryenStructSetGetRef
+    //BinaryenStructSetGetValue
+    //BinaryenSwitch
+    //BinaryenSwitchGetCondition
+    //BinaryenSwitchGetValue
+    //BinaryenTableGet
+    //BinaryenTableGetGetIndex
+    //BinaryenTableGrow
+    //BinaryenTableGrowGetDelta
+    //BinaryenTableGrowGetValue
+    //BinaryenTableSet
+    //BinaryenTableSetGetIndex
+    //BinaryenTableSetGetValue
+    //BinaryenTableSize
+    //BinaryenThrow
+    //BinaryenThrowGetOperandAt
+    //BinaryenThrowRemoveOperandAt
+    //BinaryenTry
+    //BinaryenTryGetBody
+    //BinaryenTryGetCatchBodyAt
+    //BinaryenTryRemoveCatchBodyAt
+    //BinaryenTupleExtract
+    //BinaryenTupleExtractGetTuple
+    //BinaryenTupleMake
+    //BinaryenTupleMakeGetOperandAt
+    //BinaryenTupleMakeRemoveOperandAt
+    //BinaryenUnary
+    //BinaryenUnaryGetValue
+    //BinaryenUnreachable
+    //ExpressionRunnerRunAndDispose
+    //RelooperRenderAndDispose
 };
 
 pub const Function = opaque {
@@ -447,7 +670,6 @@ pub const Function = opaque {
 
 pub const BasicHeapType = byn.BinaryenBasicHeapType;
 pub const HeapType = byn.BinaryenHeapType;
-pub const PackedType = byn.BinaryenPackedType;
 
 pub const TypeBuilder = opaque {
     inline fn c(self: *@This()) byn.TypeBuilderRef {
@@ -470,12 +692,12 @@ pub const TypeBuilder = opaque {
         return byn.TypeBuilderSetSignatureType(self.c(), index, @intFromEnum(paramTypes), @intFromEnum(resultTypes));
     }
 
-    pub fn setStructType(self: *@This(), index: Index, fieldTypes: []Type, fieldPackedTypes: []PackedType, fieldMutables: []bool) void {
+    pub fn setStructType(self: *@This(), index: Index, fieldTypes: []Type, fieldPackedTypes: []Type.Packed, fieldMutables: []bool) void {
         std.debug.assert(fieldTypes.len == fieldMutables.len and fieldTypes.len == fieldPackedTypes.len);
         return byn.TypeBuilderSetStructType(self.c(), index, @ptrCast(fieldTypes.ptr), @ptrCast(fieldPackedTypes.ptr), fieldMutables.ptr, fieldTypes.len);
     }
 
-    pub fn setArrayType(self: *@This(), index: Index, elementType: Type, elementPackedType: PackedType, elementMutable: c_int) void {
+    pub fn setArrayType(self: *@This(), index: Index, elementType: Type, elementPackedType: Type.Packed, elementMutable: c_int) void {
         return byn.TypeBuilderSetArrayType(self.c(), index, @intFromEnum(elementType), @intFromEnum(elementPackedType), elementMutable);
     }
 
@@ -642,6 +864,14 @@ pub const Type = enum(usize) {
     pub fn unreachable_() Type {
         return @enumFromInt(byn.BinaryenTypeUnreachable());
     }
+
+    pub const Packed = enum(byn.BinaryenPackedType) {
+        _,
+
+        pub fn int8() Packed {
+            return @enumFromInt(byn.BinaryenPackedTypeInt8());
+        }
+    };
 
     /// Not a real type. Used as the last parameter to BinaryenBlock to let
     /// the API figure out the type instead of providing one.
