@@ -4,6 +4,9 @@ const byn = @cImport({
     @cInclude("binaryen-c.h");
 });
 
+// TODO: don't export
+pub const c = byn;
+
 //pub const intrinsics = @import("./wasm_intrinsics.zig");
 pub export const _wasm_intrinsics_wat = @embedFile("binaryen-wat-intrinsics").*;
 pub usingnamespace @import("./cxa_stubs.zig");
@@ -668,7 +671,26 @@ pub const Function = opaque {
     }
 };
 
-pub const BasicHeapType = byn.BinaryenBasicHeapType;
+// Bit zero indicates whether the type is `shared`, so we need to leave it
+// free.
+pub const BasicHeapType = enum(byn.BinaryenBasicHeapType) {
+    ext = 0 << 1,
+    func = 1 << 1,
+    cont = 2 << 1,
+    any = 3 << 1,
+    eq = 4 << 1,
+    i31 = 5 << 1,
+    struct_ = 6 << 1,
+    array = 7 << 1,
+    exn = 8 << 1,
+    string = 9 << 1,
+    none = 10 << 1,
+    noext = 11 << 1,
+    nofunc = 12 << 1,
+    nocont = 13 << 1,
+    noexn = 14 << 1,
+};
+
 pub const HeapType = byn.BinaryenHeapType;
 
 pub const TypeBuilder = opaque {
@@ -798,27 +820,36 @@ pub const Relooper = opaque {
     }
 };
 
+test "type sanity" {
+    std.testing.expectEqual(Type.Basic.none, @enumFromInt(byn.BinaryenTypeNone()));
+    std.testing.expectEqual(Type.stringref, @enumFromInt(byn.BinaryenTypeStringref()));
+}
+
 pub const Type = enum(usize) {
+    // converted from binaryen/src/wasm-type.h, the binaryen-c.h file says core type values can
+    // be cached and will never change (also they're (TODO, check) probably in the wasm spec)
+    pub const Basic = enum(u32) {
+        none = 0,
+        @"unreachable" = 1,
+        i32 = 2,
+        i64 = 3,
+        f32 = 4,
+        f64 = 5,
+        v128 = 6,
+    };
+
+    none = @intFromEnum(Basic.none),
+    @"unreachable" = @intFromEnum(Basic.@"unreachable"),
+    i32 = @intFromEnum(Basic.i32),
+    i64 = @intFromEnum(Basic.i64),
+    f32 = @intFromEnum(Basic.f32),
+    f64 = @intFromEnum(Basic.f64),
+    v128 = @intFromEnum(Basic.v128),
+
+    // TODO: copy logic from binaryen/src/wasm/wasm-type.cpp, it's not obvious to me atm
+    stringref = 135262833271952,
     _,
 
-    pub fn none() Type {
-        return @enumFromInt(byn.BinaryenTypeNone());
-    }
-    pub fn int32() Type {
-        return @enumFromInt(byn.BinaryenTypeInt32());
-    }
-    pub fn int64() Type {
-        return @enumFromInt(byn.BinaryenTypeInt64());
-    }
-    pub fn float32() Type {
-        return @enumFromInt(byn.BinaryenTypeFloat32());
-    }
-    pub fn float64() Type {
-        return @enumFromInt(byn.BinaryenTypeFloat64());
-    }
-    pub fn vec128() Type {
-        return @enumFromInt(byn.BinaryenTypeVec128());
-    }
     pub fn funcref() Type {
         return @enumFromInt(byn.BinaryenTypeFuncref());
     }
@@ -840,9 +871,9 @@ pub const Type = enum(usize) {
     pub fn arrayref() Type {
         return @enumFromInt(byn.BinaryenTypeArrayref());
     }
-    pub fn stringref() Type {
-        return @enumFromInt(byn.BinaryenTypeStringref());
-    }
+    // pub fn stringref() Type {
+    //     return @enumFromInt(byn.BinaryenTypeStringref());
+    // }
     pub fn stringviewWTF8() Type {
         return @enumFromInt(byn.BinaryenTypeStringviewWTF8());
     }

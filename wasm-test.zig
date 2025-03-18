@@ -1,7 +1,12 @@
 const std = @import("std");
 const binaryen = @import("binaryen");
 
-pub fn main() !void {}
+pub fn main() !void {
+    // std.debug.print("{} ?= {}\n", .{ @intFromEnum(binaryen.Type.stringref), binaryen.c.BinaryenTypeStringref() });
+    // if (binaryen.Type.stringref != @as(binaryen.Type, @enumFromInt(binaryen.c.BinaryenTypeStringref()))) {
+    //     std.debug.panic("{} != {}\n", .{ @intFromEnum(binaryen.Type.stringref), binaryen.c.BinaryenTypeStringref() });
+    // }
+}
 
 export var length_transfer_buf: usize = 0;
 

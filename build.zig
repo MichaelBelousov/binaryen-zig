@@ -498,6 +498,7 @@ pub fn build(b: *std.Build) void {
 
     const tests = b.addTest(.{
         .root_source_file = b.path("test.zig"),
+        .single_threaded = single_threaded,
     });
     tests.root_module.addImport("binaryen", binaryen_mod);
 
