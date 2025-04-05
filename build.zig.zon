@@ -18,5 +18,7 @@
         "wasm_intrinsics.zig",
         "test.zig",
         "third_party",
+        "cxa_stubs.zig",
+        "clone.cpp",
     },
 }
