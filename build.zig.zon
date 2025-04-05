@@ -4,10 +4,8 @@
     .minimum_zig_version = "0.13.0",
     .dependencies = .{
         .binaryen = .{
-            // TODO: use MichaelBelousov/binaryen
-            //.url = "https://github.com/MichaelBelousov/binaryen/archive/690576cda63d59ae0cfc3906e1146a7a4278db43.zip",
-            //.hash = "1220157cf700dee7c94ba946e99dd0a62dc890b5111482b31420279c82819eda3e06",
-            .path = "../binaryen",
+            .url = "https://github.com/MichaelBelousov/binaryen/archive/4dbd7197704580112b4c4b688a3c8116c69be86b.zip",
+            .hash = "N-V-__8AAC6lFgIi_GPZJq44LmzAoZDo9ytdeUQpNIj5w0Cm",
         },
     },
     .fingerprint = 0x57f8a93b10fa5992, // changing this is a security risk, see zig docs
