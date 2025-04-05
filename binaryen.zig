@@ -11,6 +11,10 @@ pub const c = byn;
 pub export const _wasm_intrinsics_wat = @embedFile("binaryen-wat-intrinsics").*;
 pub usingnamespace @import("./cxa_stubs.zig");
 
+pub extern fn _binaryenCloneFunction(from: c.BinaryenModuleRef, to: c.BinaryenModuleRef, from_name: [*:0]const u8, to_name: [*:0]const u8) bool;
+pub extern fn _BinaryenExpressionPrintStderr(expr: c.BinaryenExpressionRef) void;
+pub extern fn _BinaryenModulePrintStderr(module: c.BinaryenModuleRef) void;
+
 pub fn freeEmit(buf: []u8) void {
     byn.free(buf.ptr);
 }
@@ -130,15 +134,15 @@ pub const Module = opaque {
 
     pub fn addFunction(
         self: *Module,
-        name: [*:0]const u8,
+        name: [:0]const u8,
         params: Type,
         results: Type,
         var_types: []const Type,
         body: *Expression,
-    ) *Function {
+    ) ?*Function {
         const func = byn.BinaryenAddFunction(
             self.c(),
-            name,
+            name.ptr,
             @intFromEnum(params),
             @intFromEnum(results),
             @constCast(@ptrCast(var_types.ptr)),
@@ -148,7 +152,7 @@ pub const Module = opaque {
         return @ptrCast(func);
     }
 
-    inline fn c(self: *Module) byn.BinaryenModuleRef {
+    pub inline fn c(self: *Module) byn.BinaryenModuleRef {
         return @ptrCast(self);
     }
 };
@@ -156,14 +160,14 @@ pub const Module = opaque {
 pub const Index = byn.BinaryenIndex;
 
 pub const Expression = opaque {
-    inline fn c(self: *Expression) byn.BinaryenExpressionRef {
+    pub inline fn c(self: *Expression) byn.BinaryenExpressionRef {
         return @ptrCast(self);
     }
 
     pub const Op = enum(byn.BinaryenOp) {
         _,
 
-        inline fn c(self: Op) byn.BinaryenOp {
+        pub inline fn c(self: Op) byn.BinaryenOp {
             return @intFromEnum(self);
         }
 
@@ -399,6 +403,170 @@ pub const Expression = opaque {
             return @enumFromInt(byn.BinaryenReinterpretInt64());
         }
 
+        pub fn andInt32() Op {
+            return @enumFromInt(byn.BinaryenAndInt32());
+        }
+        pub fn orInt32() Op {
+            return @enumFromInt(byn.BinaryenOrInt32());
+        }
+        pub fn xorInt32() Op {
+            return @enumFromInt(byn.BinaryenXorInt32());
+        }
+        pub fn eqInt32() Op {
+            return @enumFromInt(byn.BinaryenEqInt32());
+        }
+        pub fn neInt32() Op {
+            return @enumFromInt(byn.BinaryenNeInt32());
+        }
+        pub fn ltSInt32() Op {
+            return @enumFromInt(byn.BinaryenLtSInt32());
+        }
+        pub fn ltUInt32() Op {
+            return @enumFromInt(byn.BinaryenLtUInt32());
+        }
+        pub fn leSInt32() Op {
+            return @enumFromInt(byn.BinaryenLeSInt32());
+        }
+        pub fn leUInt32() Op {
+            return @enumFromInt(byn.BinaryenLeUInt32());
+        }
+        pub fn gtSInt32() Op {
+            return @enumFromInt(byn.BinaryenGtSInt32());
+        }
+        pub fn gtUInt32() Op {
+            return @enumFromInt(byn.BinaryenGtUInt32());
+        }
+        pub fn geSInt32() Op {
+            return @enumFromInt(byn.BinaryenGeSInt32());
+        }
+        pub fn geUInt32() Op {
+            return @enumFromInt(byn.BinaryenGeUInt32());
+        }
+
+        pub fn andInt64() Op {
+            return @enumFromInt(byn.BinaryenAndInt64());
+        }
+        pub fn orInt64() Op {
+            return @enumFromInt(byn.BinaryenOrInt64());
+        }
+        pub fn xorInt64() Op {
+            return @enumFromInt(byn.BinaryenXorInt64());
+        }
+        pub fn eqInt64() Op {
+            return @enumFromInt(byn.BinaryenEqInt64());
+        }
+        pub fn neInt64() Op {
+            return @enumFromInt(byn.BinaryenNeInt64());
+        }
+        pub fn ltSInt64() Op {
+            return @enumFromInt(byn.BinaryenLtSInt64());
+        }
+        pub fn ltUInt64() Op {
+            return @enumFromInt(byn.BinaryenLtUInt64());
+        }
+        pub fn leSInt64() Op {
+            return @enumFromInt(byn.BinaryenLeSInt64());
+        }
+        pub fn leUInt64() Op {
+            return @enumFromInt(byn.BinaryenLeUInt64());
+        }
+        pub fn gtSInt64() Op {
+            return @enumFromInt(byn.BinaryenGtSInt64());
+        }
+        pub fn gtUInt64() Op {
+            return @enumFromInt(byn.BinaryenGtUInt64());
+        }
+        pub fn geSInt64() Op {
+            return @enumFromInt(byn.BinaryenGeSInt64());
+        }
+        pub fn geUInt64() Op {
+            return @enumFromInt(byn.BinaryenGeUInt64());
+        }
+
+        // FIXME: I deeply already hate writing this boiler plate could generate
+        // but I already started using the raw c interface downstream
+        pub fn andFloat32() Op {
+            return @enumFromInt(byn.BinaryenAndFloat32());
+        }
+        pub fn orFloat32() Op {
+            return @enumFromInt(byn.BinaryenOrFloat32());
+        }
+        pub fn xorFloat32() Op {
+            return @enumFromInt(byn.BinaryenXorFloat32());
+        }
+        pub fn eqFloat32() Op {
+            return @enumFromInt(byn.BinaryenEqFloat32());
+        }
+        pub fn neFloat32() Op {
+            return @enumFromInt(byn.BinaryenNeFloat32());
+        }
+        pub fn ltSFloat32() Op {
+            return @enumFromInt(byn.BinaryenLtSFloat32());
+        }
+        pub fn ltFloat32() Op {
+            return @enumFromInt(byn.BinaryenLtFloat32());
+        }
+        pub fn leSFloat32() Op {
+            return @enumFromInt(byn.BinaryenLeSFloat32());
+        }
+        pub fn leFloat32() Op {
+            return @enumFromInt(byn.BinaryenLeFloat32());
+        }
+        pub fn gtSFloat32() Op {
+            return @enumFromInt(byn.BinaryenGtSFloat32());
+        }
+        pub fn gtFloat32() Op {
+            return @enumFromInt(byn.BinaryenGtFloat32());
+        }
+        pub fn geSFloat32() Op {
+            return @enumFromInt(byn.BinaryenGeSFloat32());
+        }
+        pub fn geFloat32() Op {
+            return @enumFromInt(byn.BinaryenGeFloat32());
+        }
+
+        // FIXME: I deeply already hate writing this boiler plate could generate
+        // but I already started using the raw c interface downstream
+        pub fn andFloat64() Op {
+            return @enumFromInt(byn.BinaryenAndFloat64());
+        }
+        pub fn orFloat64() Op {
+            return @enumFromInt(byn.BinaryenOrFloat64());
+        }
+        pub fn xorFloat64() Op {
+            return @enumFromInt(byn.BinaryenXorFloat64());
+        }
+        pub fn eqFloat64() Op {
+            return @enumFromInt(byn.BinaryenEqFloat64());
+        }
+        pub fn neFloat64() Op {
+            return @enumFromInt(byn.BinaryenNeFloat64());
+        }
+        pub fn ltSFloat64() Op {
+            return @enumFromInt(byn.BinaryenLtSFloat64());
+        }
+        pub fn ltFloat64() Op {
+            return @enumFromInt(byn.BinaryenLtFloat64());
+        }
+        pub fn leSFloat64() Op {
+            return @enumFromInt(byn.BinaryenLeSFloat64());
+        }
+        pub fn leFloat64() Op {
+            return @enumFromInt(byn.BinaryenLeFloat64());
+        }
+        pub fn gtSFloat64() Op {
+            return @enumFromInt(byn.BinaryenGtSFloat64());
+        }
+        pub fn gtFloat64() Op {
+            return @enumFromInt(byn.BinaryenGtFloat64());
+        }
+        pub fn geSFloat64() Op {
+            return @enumFromInt(byn.BinaryenGeSFloat64());
+        }
+        pub fn geFloat64() Op {
+            return @enumFromInt(byn.BinaryenGeFloat64());
+        }
+
         // strings
         pub fn BinaryenStringNewLossyUTF8Array() Op {
             return byn.BinaryenStringNewLossyUTF8Array();
@@ -437,8 +605,30 @@ pub const Expression = opaque {
         return @ptrCast(byn.BinaryenBinary(module.c(), op.c(), lhs.c(), rhs.c()));
     }
 
-    pub inline fn stringConst(module: *Module, name: [:0]const u8) *Expression {
-        return byn.BinaryenStringConst(module, name.ptr);
+    pub inline fn unaryOp(module: *Module, op: Op, expr: *Expression) *Expression {
+        return @ptrCast(byn.BinaryenUnary(module.c(), op.c(), expr.c()));
+    }
+
+    pub inline fn stringConst(module: *Module, name: [:0]const u8) !*Expression {
+        return @as(?*Expression, @ptrCast(byn.BinaryenStringConst(module.c(), name.ptr))) orelse {
+            return error.Null;
+        };
+    }
+
+    pub const Literal = struct {
+        c: byn.struct_binaryenLiteral,
+
+        pub inline fn int64(value: i64) Literal {
+            return .{ .c = byn.BinaryenLiteralInt64(value) };
+        }
+
+        pub inline fn float64(value: f64) Literal {
+            return .{ .c = byn.BinaryenLiteralFloat64(value) };
+        }
+    };
+
+    pub inline fn @"const"(module: *Module, literal: Literal) *Expression {
+        return byn.BinaryenConst(module, literal.c);
     }
 
     // $ grep ') BinaryenExpressionRef' .zig-cache/o/a5ca0d35ed4df445a517afd4426eb0e2/cimport.zig \
@@ -487,8 +677,16 @@ pub const Expression = opaque {
     //BinaryenBinaryGetLeft
     //BinaryenBinaryGetRight
 
-    pub fn block(module: *Module, name: [:0]const u8, children: []const *Expression, @"type": Type) *Expression {
-        return byn.BinaryenBlock(module.c(), name, children.ptr, @intCast(children.len), @"type");
+    pub fn block(module: *Module, name: ?[:0]const u8, children: []*Expression, @"type": Type) !*Expression {
+        return @as(?*Expression, @ptrCast(byn.BinaryenBlock(
+            module.c(),
+            @as([*c]const u8, @ptrCast(name)),
+            @ptrCast(children.ptr),
+            @intCast(children.len),
+            @intFromEnum(@"type"),
+        ))) orelse {
+            return error.Null;
+        };
     }
 
     //BinaryenBlockGetChildAt
@@ -666,7 +864,7 @@ pub const Expression = opaque {
 };
 
 pub const Function = opaque {
-    inline fn c(self: *@This()) byn.BinaryenFunctionRef {
+    pub inline fn c(self: *@This()) byn.BinaryenFunctionRef {
         return @ptrCast(self);
     }
 };
@@ -694,7 +892,7 @@ pub const BasicHeapType = enum(byn.BinaryenBasicHeapType) {
 pub const HeapType = byn.BinaryenHeapType;
 
 pub const TypeBuilder = opaque {
-    inline fn c(self: *@This()) byn.TypeBuilderRef {
+    pub inline fn c(self: *@This()) byn.TypeBuilderRef {
         return @ptrCast(self);
     }
 
@@ -714,12 +912,12 @@ pub const TypeBuilder = opaque {
         return byn.TypeBuilderSetSignatureType(self.c(), index, @intFromEnum(paramTypes), @intFromEnum(resultTypes));
     }
 
-    pub fn setStructType(self: *@This(), index: Index, fieldTypes: []Type, fieldPackedTypes: []Type.Packed, fieldMutables: []bool) void {
+    pub fn setStructType(self: *@This(), index: Index, fieldTypes: []Type, fieldPackedTypes: []Type.Field.Packed, fieldMutables: []bool) void {
         std.debug.assert(fieldTypes.len == fieldMutables.len and fieldTypes.len == fieldPackedTypes.len);
         return byn.TypeBuilderSetStructType(self.c(), index, @ptrCast(fieldTypes.ptr), @ptrCast(fieldPackedTypes.ptr), fieldMutables.ptr, fieldTypes.len);
     }
 
-    pub fn setArrayType(self: *@This(), index: Index, elementType: Type, elementPackedType: Type.Packed, elementMutable: c_int) void {
+    pub fn setArrayType(self: *@This(), index: Index, elementType: Type, elementPackedType: Type.Field.Packed, elementMutable: c_int) void {
         return byn.TypeBuilderSetArrayType(self.c(), index, @intFromEnum(elementType), @intFromEnum(elementPackedType), elementMutable);
     }
 
@@ -779,12 +977,12 @@ pub const TypeBuilder = opaque {
 
 pub const Relooper = opaque {
     const Block = opaque {
-        inline fn c(self: *@This()) byn.RelooperBlockRef {
+        pub inline fn c(self: *@This()) byn.RelooperBlockRef {
             return @ptrCast(self);
         }
     };
 
-    inline fn c(self: *@This()) byn.RelooperRef {
+    pub inline fn c(self: *@This()) byn.RelooperRef {
         return @ptrCast(self);
     }
 
@@ -820,12 +1018,7 @@ pub const Relooper = opaque {
     }
 };
 
-test "type sanity" {
-    std.testing.expectEqual(Type.Basic.none, @enumFromInt(byn.BinaryenTypeNone()));
-    std.testing.expectEqual(Type.stringref, @enumFromInt(byn.BinaryenTypeStringref()));
-}
-
-pub const Type = enum(usize) {
+pub const Type = enum(byn.BinaryenType) {
     // converted from binaryen/src/wasm-type.h, the binaryen-c.h file says core type values can
     // be cached and will never change (also they're (TODO, check) probably in the wasm spec)
     pub const Basic = enum(u32) {
@@ -846,8 +1039,6 @@ pub const Type = enum(usize) {
     f64 = @intFromEnum(Basic.f64),
     v128 = @intFromEnum(Basic.v128),
 
-    // TODO: copy logic from binaryen/src/wasm/wasm-type.cpp, it's not obvious to me atm
-    stringref = 135262833271952,
     _,
 
     pub fn funcref() Type {
@@ -871,9 +1062,9 @@ pub const Type = enum(usize) {
     pub fn arrayref() Type {
         return @enumFromInt(byn.BinaryenTypeArrayref());
     }
-    // pub fn stringref() Type {
-    //     return @enumFromInt(byn.BinaryenTypeStringref());
-    // }
+    pub fn stringref() Type {
+        return @enumFromInt(byn.BinaryenTypeStringref());
+    }
     pub fn stringviewWTF8() Type {
         return @enumFromInt(byn.BinaryenTypeStringviewWTF8());
     }
@@ -896,12 +1087,15 @@ pub const Type = enum(usize) {
         return @enumFromInt(byn.BinaryenTypeUnreachable());
     }
 
-    pub const Packed = enum(byn.BinaryenPackedType) {
-        _,
+    // TODO: idk about this
+    pub const Field = struct {
+        pub const Packed = enum(byn.BinaryenPackedType) {
+            _,
 
-        pub fn int8() Packed {
-            return @enumFromInt(byn.BinaryenPackedTypeInt8());
-        }
+            pub fn int8() Packed {
+                return @enumFromInt(byn.BinaryenPackedTypeInt8());
+            }
+        };
     };
 
     /// Not a real type. Used as the last parameter to BinaryenBlock to let

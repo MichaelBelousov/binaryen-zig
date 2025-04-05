@@ -131,6 +131,15 @@ pub fn build(b: *std.Build) void {
         .flags = flags,
     });
 
+    // TODO: put this behind a feature?
+    binaryen_mod.addCSourceFiles(.{
+        .root = b.path("."),
+        .files = &.{
+            "./clone.cpp",
+        },
+        .flags = flags,
+    });
+
     binaryen_mod.addCSourceFiles(.{
         .root = origin_dep.path("."),
         .files = &.{
