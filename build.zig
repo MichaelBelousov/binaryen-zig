@@ -26,6 +26,7 @@ pub fn build(b: *std.Build) void {
     // FIXME: why does this not error on web build?
     const dwarf = b.option(bool, "dwarf", "Enable full DWARF support") orelse !target.result.cpu.arch.isWasm();
     const single_threaded = b.option(bool, "single_threaded", "compile without threading support") orelse target.result.cpu.arch.isWasm();
+    const relooper_debug = b.option(bool, "relooper_debug", "compile with RELOOPER_DEBUG macro") orelse false;
 
     const origin_dep = b.dependency("binaryen", .{});
 
@@ -386,6 +387,11 @@ pub fn build(b: *std.Build) void {
 
     if (optimize == .Debug) {
         llvm_flags.append("-D_DEBUG") catch unreachable;
+    }
+
+    if (relooper_debug) {
+        binaryen_mod.addCMacro("RELOOPER_DEBUG", "1");
+        //binaryen_mod.addCMacro("RELOOPER_OPTIMIZER_DEBUG", "1");
     }
 
     binaryen_mod.addCSourceFiles(.{
