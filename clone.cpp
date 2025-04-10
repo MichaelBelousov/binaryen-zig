@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "wasm.h"
+#include "wasm-validator.h"
 #include "binaryen-c.h"
 
 using namespace wasm;
@@ -23,4 +24,8 @@ extern "C" void _BinaryenExpressionPrintStderr(BinaryenExpressionRef expr) {
 // can't print to stdout during zig tests
 extern "C" void _BinaryenModulePrintStderr(BinaryenModuleRef module) {
   std::cerr << *(Module*)module << '\n';
+}
+
+extern "C" bool _BinaryenModuleValidateWithOpts(BinaryenModuleRef module, WasmValidator::Flags flags) {
+  return WasmValidator().validate(*(Module*)module, flags);
 }

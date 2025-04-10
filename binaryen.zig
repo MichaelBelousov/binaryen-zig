@@ -11,9 +11,22 @@ pub const c = byn;
 pub export const _wasm_intrinsics_wat = @embedFile("binaryen-wat-intrinsics").*;
 pub usingnamespace @import("./cxa_stubs.zig");
 
+pub const Flags = enum(u32) {
+    minimal = 0,
+    web = 1 << 0,
+    globally = 1 << 1,
+    quiet = 1 << 2,
+    closed_world = 1 << 3,
+    _,
+
+    pub const default = .globally;
+};
+
 pub extern fn _binaryenCloneFunction(from: c.BinaryenModuleRef, to: c.BinaryenModuleRef, from_name: [*:0]const u8, to_name: [*:0]const u8) bool;
 pub extern fn _BinaryenExpressionPrintStderr(expr: c.BinaryenExpressionRef) void;
 pub extern fn _BinaryenModulePrintStderr(module: c.BinaryenModuleRef) void;
+/// NOTE: default is globally
+pub extern fn _BinaryenModuleValidateWithOpts(module: c.BinaryenModuleRef, flags: Flags) bool;
 
 pub fn freeEmit(buf: []u8) void {
     byn.free(buf.ptr);
