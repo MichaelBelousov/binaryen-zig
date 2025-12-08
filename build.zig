@@ -35,7 +35,7 @@ pub fn build(b: *std.Build) void {
         .single_threaded = single_threaded,
         .target = target,
         .optimize = optimize,
-        .sanitize_c = false,
+        .sanitize_c = .full,
     });
 
     binaryen_mod.addAnonymousImport("binaryen-wat-intrinsics", .{
@@ -374,9 +374,9 @@ pub fn build(b: *std.Build) void {
         .flags = extraFlags(b, flags, &.{"-Wno-deprecated-declarations"}),
     });
 
-    var llvm_flags = std.ArrayList([]const u8).init(b.allocator);
-    defer llvm_flags.deinit();
-    llvm_flags.appendSlice(&.{
+    var llvm_flags: std.ArrayList([]const u8) = .empty;
+    defer llvm_flags.deinit(b.allocator);
+    llvm_flags.appendSlice(b.allocator, &.{
         "-w",
         "-std=c++14",
         "-D_GNU_SOURCE",
@@ -386,7 +386,7 @@ pub fn build(b: *std.Build) void {
     }) catch unreachable;
 
     if (optimize == .Debug) {
-        llvm_flags.append("-D_DEBUG") catch unreachable;
+        llvm_flags.append(b.allocator, "-D_DEBUG") catch unreachable;
     }
 
     if (relooper_debug) {
@@ -481,10 +481,12 @@ pub fn build(b: *std.Build) void {
     binaryen_mod.link_libc = true;
     binaryen_mod.link_libcpp = true;
 
-    const lib = b.addStaticLibrary(.{
+    const lib = b.addLibrary(.{
+        .linkage = .static,
         .name = "binaryen",
         .root_module = binaryen_mod,
-        .single_threaded = single_threaded,
+        // FIXME: wtf?
+        //.single_threaded = single_threaded,
     });
 
     lib.installHeader(origin_dep.path("src/binaryen-c.h"), "binaryen/binaryen.h");
@@ -494,13 +496,19 @@ pub fn build(b: *std.Build) void {
 
     const exe = b.addExecutable(.{
         .name = "wasm-test",
-        .root_source_file = b.path("./wasm-test.zig"),
-        .single_threaded = single_threaded,
-        .target = target,
-        .optimize = optimize,
-        .strip = optimize != .Debug,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("./wasm-test.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "binaryen", .module = binaryen_mod },
+            },
+            //// FIXME: wtf?
+            //.strip = optimize != .Debug,
+            //.export_symbol_names = &.{"run"},
+            .single_threaded = single_threaded,
+        }),
     });
-    exe.root_module.addImport("binaryen", binaryen_mod);
 
     exe.root_module.export_symbol_names = &.{
         "run",
@@ -512,8 +520,15 @@ pub fn build(b: *std.Build) void {
     //exe.import_memory = true;
 
     const tests = b.addTest(.{
-        .root_source_file = b.path("test.zig"),
-        .single_threaded = single_threaded,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("test.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "binaryen", .module = binaryen_mod },
+            },
+            .single_threaded = single_threaded,
+        }),
     });
     tests.root_module.addImport("binaryen", binaryen_mod);
 
