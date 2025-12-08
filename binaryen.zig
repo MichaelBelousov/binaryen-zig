@@ -9,7 +9,7 @@ pub const c = byn;
 
 //pub const intrinsics = @import("./wasm_intrinsics.zig");
 pub export const _wasm_intrinsics_wat = @embedFile("binaryen-wat-intrinsics").*;
-pub usingnamespace @import("./cxa_stubs.zig");
+pub const cxa_stubs = @import("./cxa_stubs.zig");
 
 pub const Flags = enum(u32) {
     minimal = 0,

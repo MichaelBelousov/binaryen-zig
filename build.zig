@@ -513,6 +513,7 @@ pub fn build(b: *std.Build) void {
     exe.root_module.export_symbol_names = &.{
         "run",
     };
+    //exe.strip = optimize != .Debug;
     exe.rdynamic = true; // https://github.com/ziglang/zig/issues/14139
     exe.entry = .disabled;
     //exe.shared_memory = true;
