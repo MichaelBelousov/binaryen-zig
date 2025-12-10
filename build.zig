@@ -38,12 +38,6 @@ pub fn build(b: *std.Build) void {
         .sanitize_c = false,
     });
 
-    binaryen_mod.addAnonymousImport("binaryen-wat-intrinsics", .{
-        .root_source_file = origin_dep.path("src/passes/wasm-intrinsics.wat"),
-        .optimize = optimize,
-        .target = target,
-    });
-
     binaryen_mod.addCMacro("BUILD_STATIC_LIBRARY", "");
 
     if (single_threaded) {
@@ -189,6 +183,22 @@ pub fn build(b: *std.Build) void {
             "wasm_intrinsics.cpp",
         },
         .flags = flags,
+    });
+
+    // FIXME: prefer @embedFile of anonymous import, but doesn't seem to work in zig 0.14.0?
+    // binaryen_mod.addAnonymousImport("binaryen-wat-intrinsics", .{
+    //     .root_source_file = origin_dep.path("src/passes/wasm-intrinsics.wat"),
+    //     .optimize = optimize,
+    //     .target = target,
+    // });
+
+    const wasm_intrinsics_data_build_cmd = b.addSystemCommand(&.{ "xxd", "-n", "_wasm_intrinsics_wat", "-i" });
+    wasm_intrinsics_data_build_cmd.addFileArg(origin_dep.path("src/passes/wasm-intrinsics.wat"));
+
+    binaryen_mod.addCSourceFile(.{
+        .file = wasm_intrinsics_data_build_cmd.captureStdOut(),
+        .flags = flags,
+        .language = .cpp,
     });
 
     binaryen_mod.addCSourceFiles(.{
