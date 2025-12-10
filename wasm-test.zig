@@ -1,6 +1,11 @@
 const std = @import("std");
 const binaryen = @import("binaryen");
 
+comptime {
+    // Import CXA stubs from binaryen module
+    _ = binaryen.cxa_stubs;
+}
+
 pub fn main() !void {
     // std.debug.print("{} ?= {}\n", .{ @intFromEnum(binaryen.Type.stringref), binaryen.c.BinaryenTypeStringref() });
     // if (binaryen.Type.stringref != @as(binaryen.Type, @enumFromInt(binaryen.c.BinaryenTypeStringref()))) {

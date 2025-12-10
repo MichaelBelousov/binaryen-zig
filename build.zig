@@ -91,6 +91,10 @@ pub fn build(b: *std.Build) void {
 
         // FIXME: only needed in release
         "-Wno-unused-but-set-variable",
+
+        // Force-enable filesystem support for WASI target (Zig 0.15.2 compatibility)
+        "-U_LIBCPP_HAS_FILESYSTEM",
+        "-D_LIBCPP_HAS_FILESYSTEM=1",
     };
 
     binaryen_mod.addCSourceFiles(.{
@@ -509,6 +513,28 @@ pub fn build(b: *std.Build) void {
             .single_threaded = single_threaded,
         }),
     });
+
+    // Add libc++ iostream implementations for WebAssembly target
+    if (target.result.cpu.arch.isWasm()) {
+        const libcxx_flags = extraFlags(b, flags, &.{
+            "-D_LIBCPP_BUILDING_LIBRARY",
+            "-D_LIBCPP_HAS_LOCALIZATION=0",
+            "-DNDEBUG",
+            "-std=c++20",
+        });
+        const libcxx_sources = [_][]const u8{
+            "ios.cpp",
+            "iostream.cpp",
+            "fstream.cpp",
+        };
+        for (libcxx_sources) |source| {
+            const source_path = b.fmt("{s}/libcxx/src/{s}", .{ b.graph.zig_lib_directory.path.?, source });
+            exe.root_module.addCSourceFile(.{
+                .file = .{ .cwd_relative = source_path },
+                .flags = libcxx_flags,
+            });
+        }
+    }
 
     exe.root_module.export_symbol_names = &.{
         "run",
