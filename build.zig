@@ -35,7 +35,7 @@ pub fn build(b: *std.Build) void {
         .single_threaded = single_threaded,
         .target = target,
         .optimize = optimize,
-        .sanitize_c = .full,
+        .sanitize_c = .trap,
     });
 
     binaryen_mod.addAnonymousImport("binaryen-wat-intrinsics", .{
