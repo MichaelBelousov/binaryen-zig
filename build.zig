@@ -36,6 +36,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .sanitize_c = .trap,
+        .link_libcpp = true,
     });
 
     binaryen_mod.addAnonymousImport("binaryen-wat-intrinsics", .{
@@ -482,9 +483,6 @@ pub fn build(b: *std.Build) void {
         .flags = flags,
     });
 
-    binaryen_mod.link_libc = true;
-    binaryen_mod.link_libcpp = true;
-
     const lib = b.addLibrary(.{
         .linkage = .static,
         .name = "binaryen",
@@ -520,7 +518,7 @@ pub fn build(b: *std.Build) void {
             "-D_LIBCPP_BUILDING_LIBRARY",
             "-D_LIBCPP_HAS_LOCALIZATION=0",
             "-DNDEBUG",
-            "-std=c++20",
+            "-std=c++17",
         });
         const libcxx_sources = [_][]const u8{
             "ios.cpp",

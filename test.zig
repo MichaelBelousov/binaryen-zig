@@ -2,6 +2,7 @@ const std = @import("std");
 const binaryen = @import("binaryen");
 
 comptime {
+    @setEvalBranchQuota(10_000);
     std.testing.refAllDeclsRecursive(binaryen);
 }
 
